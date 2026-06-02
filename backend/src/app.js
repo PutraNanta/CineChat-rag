@@ -29,6 +29,14 @@ export function createApp() {
   );
   app.use(express.json());
 
+  app.get("/", (_req, res) => {
+    res.json({
+      service: "rag-web-backend",
+      status: "ok",
+      health: "/api/health",
+    });
+  });
+
   app.use("/api", apiRoutes);
 
   app.use(notFound);

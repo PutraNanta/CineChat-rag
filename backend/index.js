@@ -5,7 +5,9 @@ import { ensureGuestUserId } from "./src/repositories/usersRepository.js";
 
 const app = createApp();
 
-app.listen(env.PORT, async () => {
+export default app;
+
+async function logStartupChecks() {
   console.log(`Backend running on port ${env.PORT}`);
   console.log("Configured Node-RED endpoints:", nodeRedConfiguredMap);
 
@@ -23,4 +25,10 @@ app.listen(env.PORT, async () => {
   } else {
     console.error("MySQL connection: failed.", dbStatus.reason);
   }
-});
+}
+
+if (!process.env.VERCEL) {
+  app.listen(env.PORT, async () => {
+    await logStartupChecks();
+  });
+}
