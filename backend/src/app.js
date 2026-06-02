@@ -7,10 +7,23 @@ import { errorHandler } from "./middlewares/errorHandler.js";
 
 export function createApp() {
   const app = express();
+  const allowedOrigins = env.FRONTEND_ORIGINS.length > 0 ? env.FRONTEND_ORIGINS : [];
 
   app.use(
     cors({
-      origin: env.FRONTEND_ORIGIN === "*" ? true : env.FRONTEND_ORIGIN,
+      origin: (requestOrigin, callback) => {
+        if (!requestOrigin) {
+          callback(null, true);
+          return;
+        }
+
+        if (allowedOrigins.includes("*") || allowedOrigins.includes(requestOrigin)) {
+          callback(null, true);
+          return;
+        }
+
+        callback(new Error(`Origin not allowed: ${requestOrigin}`));
+      },
       credentials: true,
     }),
   );
