@@ -1,6 +1,8 @@
 import axios from "axios";
 
-const BASE_URL = import.meta.env.VITE_API_BASE_URL || "/api";
+const BASE_URL =
+   import.meta.env.VITE_API_BASE_URL ||
+   (import.meta.env.DEV ? "http://localhost:3000/api" : "");
 
 export const apiClient = axios.create({
    baseURL: BASE_URL,
@@ -11,6 +13,14 @@ export const apiClient = axios.create({
 
 apiClient.interceptors.request.use(
    (config) => {
+      if (import.meta.env.PROD && !import.meta.env.VITE_API_BASE_URL) {
+         return Promise.reject(
+            new Error(
+               "VITE_API_BASE_URL belum diisi di environment production.",
+            ),
+         );
+      }
+
       const token = localStorage.getItem("token") || sessionStorage.getItem("token");
 
       if (token) {
