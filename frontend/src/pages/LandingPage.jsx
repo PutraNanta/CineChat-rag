@@ -4,6 +4,7 @@ import {
   Clapperboard,
   CircleCheckBig,
   Film,
+  Bot,
   LogIn,
   MessageCircleMore,
   MessageCircle,
@@ -156,7 +157,7 @@ export function LandingPage() {
 
                 <div className="cinechat-preview__message cinechat-preview__message--assistant">
                   <div className="cinechat-preview__assistant-badge">
-                    <MessageCircle className="h-4 w-4" />
+                    <Bot className="h-4 w-4" />
                   </div>
                   <div className="cinechat-preview__assistant-content">
                     <p>Berikut beberapa rekomendasi film sci-fi terbaik menurut saya:</p>
