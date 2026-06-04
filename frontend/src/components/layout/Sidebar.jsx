@@ -107,10 +107,10 @@ export function Sidebar({ isOpen, toggleSidebar, onNewChat }) {
               </span>
               <span className="min-w-0">
                 <span className="block truncate text-sm font-semibold text-foreground">
-                  RAG Gateway
+                  CineChat
                 </span>
                 <span className="block text-[11px] text-muted-foreground">
-                  Landing Page
+                  Movie Chat Assistant
                 </span>
               </span>
             </button>

@@ -4,9 +4,9 @@ import {
   ArrowLeft,
   Eye,
   EyeOff,
+  Film,
   Lock,
   Mail,
-  MessageCircle,
   Shield,
   User,
 } from "lucide-react";
@@ -162,6 +162,14 @@ export function AuthPage() {
     <section className="auth-page">
       <div className="auth-page__ambient auth-page__ambient--left" />
       <div className="auth-page__ambient auth-page__ambient--right" />
+      <div className="auth-page__ambient auth-page__ambient--bottom" />
+
+      <div className="auth-page__film auth-page__film--left" aria-hidden="true">
+        <Film className="h-full w-full" />
+      </div>
+      <div className="auth-page__film auth-page__film--right" aria-hidden="true">
+        <Film className="h-full w-full" />
+      </div>
 
       <div className="auth-shell">
         <div className="auth-top-row">
@@ -173,11 +181,6 @@ export function AuthPage() {
             <ArrowLeft className="h-5 w-5" />
             <span>Kembali ke Landing Page</span>
           </Button>
-
-          <div className="auth-brand-pill">
-            <MessageCircle className="h-5 w-5" />
-            <span>Node-RED Web Chat</span>
-          </div>
         </div>
 
         <div className="auth-card">

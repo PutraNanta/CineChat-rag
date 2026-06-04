@@ -9,7 +9,7 @@ import {
   MessageCircleMore,
   MessageCircle,
   MoreVertical,
-  Sparkles,
+  Send,
   Star,
   Zap,
 } from "lucide-react";
@@ -187,7 +187,7 @@ export function LandingPage() {
                   <span>Ketik pesan Anda...</span>
                 </div>
                 <button className="cinechat-preview__send" type="button" aria-label="Kirim pesan">
-                  <Sparkles className="h-5 w-5 rotate-45" />
+                  <Send className="h-5 w-5" />
                 </button>
               </div>
             </div>
