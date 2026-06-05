@@ -901,20 +901,24 @@ body {
 
 .cinechat-features {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 0;
+  margin-top: 26px;
   border: 1px solid rgba(219, 234, 254, 0.95);
-  border-radius: 22px;
-  background: rgba(255, 255, 255, 0.72);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.66);
   box-shadow: 0 14px 40px rgba(37, 99, 235, 0.08);
   overflow: hidden;
+  backdrop-filter: blur(10px);
 }
 
 .cinechat-feature {
   display: flex;
-  align-items: flex-start;
-  gap: 16px;
-  padding: 20px 20px 18px;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 18px 14px 16px;
+  text-align: center;
 }
 
 .cinechat-feature+.cinechat-feature {
@@ -924,12 +928,21 @@ body {
 .cinechat-feature__icon {
   color: #2563eb;
   flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 999px;
+  background: rgba(219, 234, 254, 0.72);
 }
 
 .cinechat-feature__body h3 {
   margin: 0 0 6px;
-  font-size: 1rem;
+  font-size: 0.95rem;
+  line-height: 1.35;
   color: #0f1f4a;
+  white-space: pre-line;
 }
 
 .cinechat-feature__body p {
@@ -978,11 +991,6 @@ body {
 
   .cinechat-features {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .cinechat-feature:nth-child(3),
-  .cinechat-feature:nth-child(4) {
-    border-top: 1px solid rgba(191, 219, 254, 0.85);
   }
 
   .cinechat-feature:nth-child(even) {
@@ -1044,13 +1052,8 @@ body {
     border-top: 1px solid rgba(191, 219, 254, 0.85);
   }
 
-  .cinechat-feature:nth-child(3),
-  .cinechat-feature:nth-child(4) {
-    border-top: 1px solid rgba(191, 219, 254, 0.85);
-  }
-
   .cinechat-feature {
-    padding: 18px;
+    padding: 16px;
   }
 
   .cinechat-landing__film--left,

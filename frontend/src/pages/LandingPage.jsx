@@ -9,8 +9,10 @@ import {
   MessageCircleMore,
   MessageCircle,
   MoreVertical,
+  LayoutGrid,
   Send,
   Star,
+  ShieldCheck,
   Zap,
   Terminal,
 } from "lucide-react";
@@ -19,18 +21,19 @@ import { useAuthContext } from "@/context/AuthContext";
 const featureItems = [
   {
     icon: Star,
-    title: "Rekomendasi personal",
-    description: "Disesuaikan dengan selera dan preferensi kamu.",
+    title: "Rekomendasi\nPersonal",
   },
   {
     icon: Zap,
-    title: "Jawaban cepat",
-    description: "AI cerdas yang selalu siap membantu kapan saja.",
+    title: "Jawaban Cepat\ndan Akurat",
   },
   {
-    icon: BookOpenText,
-    title: "Sinopsis & trivia",
-    description: "Dapatkan informasi lengkap dan menarik tentang film.",
+    icon: LayoutGrid,
+    title: "Data Film\nLengkap",
+  },
+  {
+    icon: ShieldCheck,
+    title: "Sumber Data\nTerpercaya",
   },
 ];
 
@@ -148,6 +151,23 @@ export function LandingPage() {
                 <span>Mulai Chat</span>
               </button>
             </div>
+
+            <section className="cinechat-features" aria-label="Keunggulan CineChat">
+              {featureItems.map((feature) => {
+                const Icon = feature.icon;
+
+                return (
+                  <article className="cinechat-feature" key={feature.title}>
+                    <div className="cinechat-feature__icon">
+                      <Icon className="h-5 w-5" />
+                    </div>
+                    <div className="cinechat-feature__body">
+                      <h3>{feature.title}</h3>
+                    </div>
+                  </article>
+                );
+              })}
+            </section>
           </div>
 
           <aside className="cinechat-preview" aria-label="Pratinjau percakapan CineChat">
@@ -215,23 +235,6 @@ export function LandingPage() {
           </aside>
         </main>
 
-        <section className="cinechat-features" aria-label="Keunggulan CineChat">
-          {featureItems.map((feature) => {
-            const Icon = feature.icon;
-
-            return (
-              <article className="cinechat-feature" key={feature.title}>
-                <div className="cinechat-feature__icon">
-                  <Icon className="h-7 w-7" />
-                </div>
-                <div className="cinechat-feature__body">
-                  <h3>{feature.title}</h3>
-                  <p>{feature.description}</p>
-                </div>
-              </article>
-            );
-          })}
-        </section>
         {/* PROMPT GRID DENGAN DETAIL ATRIBUT KOLOM DATABASE */}
         <section className="prompt-grid" aria-label="Panduan mode CineChat">
           {modeGuides.map((group) => (
