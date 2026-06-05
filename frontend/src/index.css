@@ -126,10 +126,11 @@ body {
   align-items: center;
   justify-content: center;
   border-radius: 999px;
-  background: #dbeafe;
-  color: #1d4ed8;
+  background: linear-gradient(180deg, #eff6ff 0%, #dbeafe 100%);
+  color: #2563eb;
   font-size: 12px;
   font-weight: 700;
+  flex: 0 0 auto;
 }
 
 .quick-start-body h2 {
@@ -143,28 +144,39 @@ body {
 }
 
 .prompt-grid {
-  margin-top: 16px;
+  margin-top: 18px;
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 14px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
 }
 
 .prompt-card {
-  border: 1px solid var(--card-border);
-  background: #fff;
-  border-radius: 14px;
-  padding: 16px;
+  border: 1px solid rgba(219, 234, 254, 0.95);
+  background: rgba(255, 255, 255, 0.82);
+  border-radius: 18px;
+  padding: 16px 18px;
+  box-shadow: 0 12px 30px rgba(37, 99, 235, 0.07);
+  backdrop-filter: blur(10px);
 }
 
 .prompt-card-head {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
 }
 
 .prompt-card h3 {
   margin: 0;
-  font-size: 16px;
+  font-size: 0.95rem;
+  line-height: 1.25;
+  color: #0f1f4a;
+}
+
+.prompt-card-copy p {
+  margin: 4px 0 0;
+  font-size: 0.88rem;
+  line-height: 1.45;
+  color: #5b6a8a;
 }
 
 .prompt-card p {
@@ -901,15 +913,10 @@ body {
 
 .cinechat-features {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 0;
-  margin-top: 26px;
-  border: 1px solid rgba(219, 234, 254, 0.95);
-  border-radius: 18px;
-  background: rgba(255, 255, 255, 0.66);
-  box-shadow: 0 14px 40px rgba(37, 99, 235, 0.08);
-  overflow: hidden;
-  backdrop-filter: blur(10px);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+  margin-top: 22px;
+  max-width: 760px;
 }
 
 .cinechat-feature {
@@ -917,12 +924,8 @@ body {
   flex-direction: column;
   align-items: center;
   gap: 10px;
-  padding: 18px 14px 16px;
+  padding: 0;
   text-align: center;
-}
-
-.cinechat-feature+.cinechat-feature {
-  border-left: 1px solid rgba(191, 219, 254, 0.85);
 }
 
 .cinechat-feature__icon {
@@ -931,25 +934,18 @@ body {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 38px;
-  height: 38px;
+  width: 28px;
+  height: 28px;
   border-radius: 999px;
-  background: rgba(219, 234, 254, 0.72);
+  background: transparent;
 }
 
 .cinechat-feature__body h3 {
-  margin: 0 0 6px;
-  font-size: 0.95rem;
+  margin: 0;
+  font-size: 0.98rem;
   line-height: 1.35;
   color: #0f1f4a;
   white-space: pre-line;
-}
-
-.cinechat-feature__body p {
-  margin: 0;
-  font-size: 0.92rem;
-  color: #27406f;
-  line-height: 1.5;
 }
 
 .cinechat-footer {
@@ -991,10 +987,15 @@ body {
 
   .cinechat-features {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px 18px;
+  }
+
+  .prompt-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .cinechat-feature:nth-child(even) {
-    border-left: 1px solid rgba(191, 219, 254, 0.85);
+    border-left: 0;
   }
 }
 
@@ -1045,15 +1046,15 @@ body {
 
   .cinechat-features {
     grid-template-columns: 1fr;
-  }
-
-  .cinechat-feature+.cinechat-feature {
-    border-left: 0;
-    border-top: 1px solid rgba(191, 219, 254, 0.85);
+    gap: 12px;
   }
 
   .cinechat-feature {
-    padding: 16px;
+    padding: 0;
+  }
+
+  .prompt-grid {
+    grid-template-columns: 1fr;
   }
 
   .cinechat-landing__film--left,
