@@ -110,7 +110,43 @@ Buat `frontend/.env` jika API / Backend tidak menggunakan port 3000:
 VITE_API_BASE_URL=http://localhost:3000/api
 ```
 
-## Menjalankan Aplikasi
+## Menjalankan dengan Docker Compose (disarankan)
+
+Satu MySQL Docker untuk **dua database**: `db_rag_web` (chat app) dan `sakila` (Node-RED SQL).
+
+```bash
+# 1. Env root
+cp .env.example .env
+# isi DB_PASSWORD, GEMINI_API_KEY, PINECONE_API_KEY, JWT_SECRET
+
+# 2. Jalankan stack
+docker compose up -d database
+
+# 3. Import schema app + sakila (sekali saja)
+.\scripts\import-rag-schema.ps1
+.\scripts\import-sakila.ps1
+
+# 4. Jalankan semua service
+docker compose up -d --build
+```
+
+| Service   | URL lokal              |
+| --------- | ---------------------- |
+| Frontend  | http://localhost       |
+| Backend   | http://localhost:5000  |
+| Node-RED  | http://localhost:1880  |
+| MySQL     | 127.0.0.1:**3307**     |
+
+**Tidak perlu Laragon lagi** — Node-RED connect ke `database:3306` / DB `sakila` di dalam Docker.
+
+### Deploy Node-RED ke Railway
+
+1. Buat service baru → root directory: `nodered`
+2. Set env: `GEMINI_API_KEY`, `PINECONE_API_KEY`, `MYSQL_HOST`, `MYSQL_PORT`, `MYSQL_USER`, `MYSQL_PASSWORD`, `MYSQL_DATABASE_SAKILA=sakila`
+3. Import `sakila.sql` ke MySQL Railway (satu server dengan `db_rag_web`)
+4. Backend Railway: `NODE_RED_BASE_URL=https://<nodered>.up.railway.app` dan `NODE_RED_URL=/api/chat`
+
+## Menjalankan Aplikasi (manual / dev)
 
 Anda akan membutuhkan 3 terminal untuk menjalankan keseluruhan skenario:
 
@@ -166,7 +202,8 @@ Jika aplikasi Node-RED tidak menyala atau timeout, API dapat mengembalikan respo
 | ------ | -------------------- | ------ |
 | `502` / Invalid URL | URL Node-RED backend tidak cocok | Sesuaikan `NODE_RED_*_URL` pada `.env` dengan port run `startnodered` |
 | Gagal Login / Auth 401 | Sesi expired / kredensial salah | Gunakan *Guest Mode* atau ulangi auth |
-| Database Error (`ECONNREFUSED`) | MySQL mati atau salah port/password | Cek kredensial di `backend/.env` dan pastikan MySQL berjalan |
+| Database Error (`ECONNREFUSED`) | MySQL mati atau salah port/password | Docker: `DB_PORT=3307` dari host; di dalam compose: `database:3306` |
+| Node-RED SQL gagal | DB `sakila` belum di-import | Jalankan `.\scripts\import-sakila.ps1` |
 | Node-RED crash saat Start | Port 1880 bentrok | Matikan layanan di Node-RED global jika ada, atau tambal `settings.cjs` |
 
 ## Build Production

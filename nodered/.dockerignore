@@ -1,0 +1,5 @@
+data/node_modules
+data/.npm
+data/.config.*
+data/.flows*.backup
+data/flows_cred.json

@@ -12,22 +12,35 @@ services:
       - "3307:3306"
     volumes:
       - ./mysql-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uroot -p$$MYSQL_ROOT_PASSWORD || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 8
+      start_period: 30s
 
   nodered:
-    image: nodered/node-red:latest
+    build:
+      context: ./nodered
     container_name: cinechat_nodered
     restart: always
     ports:
       - "1880:1880"
-    env_file:
-      - .env
     environment:
+      PORT: 1880
       GEMINI_API_KEY: ${GEMINI_API_KEY}
       PINECONE_API_KEY: ${PINECONE_API_KEY}
+      NODE_RED_CREDENTIAL_SECRET: ${NODE_RED_CREDENTIAL_SECRET:-}
+      MYSQL_HOST: ${MYSQL_HOST:-database}
+      MYSQL_PORT: ${MYSQL_PORT:-3306}
+      MYSQL_DATABASE_SAKILA: ${MYSQL_DATABASE_SAKILA:-sakila}
+      MYSQL_USER: ${DB_USER:-root}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
     volumes:
-      # Sesuai instruksi, direktori ./nodered/data pada host akan otomatis terbuat
-      # Jika flow Anda ada di backend/data, copy flows dan konfigurasi tersebut ke ./nodered/data terlebih dahulu
       - ./nodered/data:/data
+    depends_on:
+      database:
+        condition: service_healthy
 
   backend:
     build:
@@ -38,9 +51,20 @@ services:
       - "5000:5000"
     env_file:
       - .env
+    environment:
+      PORT: 5000
+      DB_HOST: database
+      DB_PORT: 3306
+      DB_USER: ${DB_USER:-root}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_NAME: ${DB_NAME}
+      NODE_RED_BASE_URL: http://nodered:1880
+      NODE_RED_URL: ${NODE_RED_URL:-/api/chat}
     depends_on:
-      - database
-      - nodered
+      database:
+        condition: service_healthy
+      nodered:
+        condition: service_started
 
   frontend:
     build:
