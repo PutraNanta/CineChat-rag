@@ -1,11 +1,17 @@
 import { MODE_TITLES } from "../config/constants.js";
-import { sessionStore } from "../repositories/sessionStore.js";
+import { dbConfigured } from "../config/env.js";
+import { memorySessionStore } from "../repositories/sessionStore.memory.js";
+import { mysqlSessionStore } from "../repositories/sessionStore.mysql.js";
 import { requestNodeRed } from "./nodeRedService.js";
 import { HttpError } from "../utils/httpError.js";
 import { parseNodeRedMetrics } from "../utils/metricsParser.js";
 
+function getSessionStore() {
+  return dbConfigured ? mysqlSessionStore : memorySessionStore;
+}
+
 export async function getLatestSession(userId) {
-  return sessionStore.getLatest(userId);
+  return getSessionStore().getLatest(userId);
 }
 
 export async function sendMessageToMode({
@@ -15,11 +21,16 @@ export async function sendMessageToMode({
   userId,
   forceNewSession = false,
 }) {
+  const sessionStore = getSessionStore();
   const session = await sessionStore.getOrCreate(sessionId, message, {
     mode,
     userId,
     forceNew: forceNewSession,
   });
+
+  if (!session?.id) {
+    throw new HttpError(500, "Gagal membuat atau memuat session chat.");
+  }
 
   await sessionStore.appendMessage(session.id, {
     sender: "user",
@@ -55,29 +66,38 @@ export async function sendMessageToMode({
       source: result.source,
     };
   } catch (error) {
-    const fallback = `Gagal menghubungi Node-RED untuk mode ${MODE_TITLES[mode]}.`;
+    const reason =
+      error?.details?.reason || error?.message || "Silakan coba lagi.";
+    const fallback = `Gagal menghubungi AI untuk mode ${MODE_TITLES[mode]}. ${reason}`;
+
     await sessionStore.appendMessage(session.id, {
       sender: "assistant",
       content: fallback,
       endpointMode: mode,
       source: "manual",
     });
-    throw error;
+
+    return {
+      answer: fallback,
+      sessionId: session.id,
+      mode,
+      source: "manual",
+    };
   }
 }
 
 export async function listSessions(userId) {
-  return sessionStore.list(userId);
+  return getSessionStore().list(userId);
 }
 
 export async function getSessionMessages(sessionId, userId) {
-  const session = await sessionStore.getById(sessionId, userId);
+  const session = await getSessionStore().getById(sessionId, userId);
   if (!session) throw new HttpError(404, "Session tidak ditemukan.");
   return session.messages;
 }
 
 export async function deleteSession(sessionId, userId) {
-  const deleted = await sessionStore.removeById(sessionId, userId);
+  const deleted = await getSessionStore().removeById(sessionId, userId);
   if (!deleted) throw new HttpError(404, "Session tidak ditemukan.");
   return { ok: true };
 }

@@ -28,17 +28,11 @@ export const env = Object.freeze({
   JWT_EXPIRES_IN: process.env.JWT_EXPIRES_IN || "7d",
   NODE_RED_BASE_URL: process.env.NODE_RED_BASE_URL || "",
   NODE_RED_TIMEOUT_MS: toNumber(process.env.NODE_RED_TIMEOUT_MS, 30000),
-  NODE_RED_ENDPOINTS: {
-    rag: process.env.NODE_RED_RAG_URL || "",
-    oltp: process.env.NODE_RED_OLTP_URL || "",
-    dwh: process.env.NODE_RED_DWH_URL || "",
-  },
+  NODE_RED_URL: process.env.NODE_RED_URL || "",
 });
 
 export const nodeRedConfiguredMap = Object.freeze({
-  rag: env.NODE_RED_ENDPOINTS.rag || "(not set)",
-  oltp: env.NODE_RED_ENDPOINTS.oltp || "(not set)",
-  dwh: env.NODE_RED_ENDPOINTS.dwh || "(not set)",
+  chat: env.NODE_RED_URL || "(not set)",
 });
 
 export const dbConfigured = Boolean(env.DB_HOST && env.DB_USER && env.DB_NAME);

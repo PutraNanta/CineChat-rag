@@ -45,3 +45,15 @@ Desktop.ini
 
 # Optional local tooling
 .cursor/
+
+# Docker / local database runtime (jangan di-commit)
+mysql-data/
+*.sock
+
+# Node-RED runtime & credentials (commit flows.json saja)
+nodered/data/node_modules/
+nodered/data/.npm/
+nodered/data/.config.*
+nodered/data/.flows*.backup
+nodered/data/flows_cred.json
+nodered/data/*_cred.json

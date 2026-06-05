@@ -1,0 +1,55 @@
+version: '3.8'
+
+services:
+  database:
+    image: mysql:8.0
+    container_name: cinechat_db
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+      MYSQL_DATABASE: ${DB_NAME}
+    ports:
+      - "3307:3306"
+    volumes:
+      - ./mysql-data:/var/lib/mysql
+
+  nodered:
+    image: nodered/node-red:latest
+    container_name: cinechat_nodered
+    restart: always
+    ports:
+      - "1880:1880"
+    env_file:
+      - .env
+    environment:
+      GEMINI_API_KEY: ${GEMINI_API_KEY}
+      PINECONE_API_KEY: ${PINECONE_API_KEY}
+    volumes:
+      # Sesuai instruksi, direktori ./nodered/data pada host akan otomatis terbuat
+      # Jika flow Anda ada di backend/data, copy flows dan konfigurasi tersebut ke ./nodered/data terlebih dahulu
+      - ./nodered/data:/data
+
+  backend:
+    build:
+      context: ./backend
+    container_name: cinechat_backend
+    restart: always
+    ports:
+      - "5000:5000"
+    env_file:
+      - .env
+    depends_on:
+      - database
+      - nodered
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        - VITE_API_BASE_URL=${VITE_API_BASE_URL:-http://localhost:5000/api}
+    container_name: cinechat_frontend
+    restart: always
+    ports:
+      - "80:80"
+    depends_on:
+      - backend

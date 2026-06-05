@@ -13,9 +13,7 @@ export async function getHealth(_req, res) {
       reason: dbHealth.ok ? null : dbHealth.reason,
     },
     configuredEndpoints: {
-      rag: nodeRedConfiguredMap.rag !== "(not set)",
-      oltp: nodeRedConfiguredMap.oltp !== "(not set)",
-      dwh: nodeRedConfiguredMap.dwh !== "(not set)",
+      chat: nodeRedConfiguredMap.chat !== "(not set)",
     },
   });
 }

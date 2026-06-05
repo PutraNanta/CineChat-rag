@@ -22,7 +22,7 @@ function App() {
     <Routes>
       <Route path="/" element={<LandingPage />} />
       <Route path="/chat" element={<ChatEntryPage />} />
-      <Route path="/chat/new" element={<ChatPage />} />
+      {/* /chat/new harus lewat :sessionId agar useParams() = "new", bukan undefined */}
       <Route path="/chat/:sessionId" element={<ChatPage />} />
       <Route path="/auth" element={<AuthPage />} />
       <Route path="*" element={<Navigate to="/" replace />} />

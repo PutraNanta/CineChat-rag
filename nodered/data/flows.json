@@ -1,0 +1,1684 @@
+[
+    {
+        "id": "b3945e884a46efb8",
+        "type": "tab",
+        "label": "web flow",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "de0d2809d2f8c59f",
+        "type": "MySQLdatabase",
+        "name": "Sakila (web)",
+        "host": "host.docker.internal",
+        "port": "3306",
+        "db": "sakila",
+        "tz": "",
+        "charset": "UTF8"
+    },
+    {
+        "id": "cd9507401d0e2dfa",
+        "type": "switch",
+        "z": "b3945e884a46efb8",
+        "name": "Router (Mode)",
+        "property": "pertanyaan",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "regex",
+                "v": "^/rag",
+                "vt": "str",
+                "case": false
+            },
+            {
+                "t": "regex",
+                "v": "^/sqln",
+                "vt": "str",
+                "case": false
+            },
+            {
+                "t": "regex",
+                "v": "^/sqld",
+                "vt": "str",
+                "case": false
+            },
+            {
+                "t": "regex",
+                "v": "^/addfilm",
+                "vt": "str",
+                "case": false
+            },
+            {
+                "t": "regex",
+                "v": "^/editfilm",
+                "vt": "str",
+                "case": false
+            },
+            {
+                "t": "regex",
+                "v": "^/delfilm",
+                "vt": "str",
+                "case": false
+            },
+            {
+                "t": "else"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 7,
+        "x": 730,
+        "y": 480,
+        "wires": [
+            [
+                "26ea6010ee324387"
+            ],
+            [
+                "1156f7eb77ce04a2"
+            ],
+            [
+                "27230f580e826c8e"
+            ],
+            [
+                "5addcfdc561a4d89"
+            ],
+            [
+                "b21cf6bf051be150"
+            ],
+            [
+                "625882b72d78f409"
+            ],
+            [
+                "bf6b90f3ef607728"
+            ]
+        ]
+    },
+    {
+        "id": "bf6b90f3ef607728",
+        "type": "function",
+        "z": "b3945e884a46efb8",
+        "name": "Help Message",
+        "func": "msg.payload = {\n    \"chatId\": msg.chat_id,\n    \"type\": \"message\",\n    \"content\": \"🤖 **Bantuan di RAG MCA BOT!** 🤖\\n\\n\" +\n               \"Berikut adalah daftar perintah teks yang bisa kamu gunakan:\\n\\n\" +\n               \"💡 **PENCARIAN DATA (READ):**\\n\" +\n               \"1. Ketik `/rag [pertanyaan]` -> Fitur Chat AI + Vector Database Pinecone.\\n\" +\n               \"2. Ketik `/sqln [pertanyaan]` -> Sumber Database Normalisasi (Sakila).\\n\" +\n               \"3. Ketik `/sqld [pertanyaan]` -> Sumber Database Denormalisasi (Sakila).\\n\\n\" +\n               \"🎬 **MANAJEMEN FILM (CRUD Database DENORMALISASI):**\\n\" +\n               \"4. Ketik `/addfilm [data judul, deskripsi, kategori, aktor]` -> Menambahkan data film baru (Create).\\n\" +\n               \"5. Ketik `/editfilm [perintah]` -> Memperbarui data film yang ada (Update).\\n\" +\n               \"6. Ketik `/delfilm [judul film]` -> Menghapus film dari database (Delete).\\n\\n\" +\n               \"*Catatan: Gunakan tanda seru (/) di awal perintah agar pengetikan di Discord lancar tanpa gangguan.*\"\n};\nreturn msg;",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1150,
+        "y": 1160,
+        "wires": [
+            [
+                "f711aab9755ffeb5"
+            ]
+        ]
+    },
+    {
+        "id": "26ea6010ee324387",
+        "type": "function",
+        "z": "b3945e884a46efb8",
+        "name": "Clean /rag",
+        "func": "msg.pertanyaan = msg.pertanyaan.replace(/^\\/rag\\s*/i, \"\").trim();\nif (!msg.pertanyaan) {\n    msg.payload = { \"chatId\": msg.chat_id, \"type\": \"message\", \"content\": \"Harap masukkan pertanyaan setelah /rag\" };\n    return [null, msg];\n}\n\nmsg.payload = {\n    \"model\": \"models/gemini-embedding-001\",\n    \"content\": {\n        \"parts\": [{\"text\": msg.pertanyaan}]\n    }\n};\nreturn [msg, null];",
+        "outputs": 2,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1160,
+        "y": 40,
+        "wires": [
+            [
+                "cc50741a586431b1"
+            ],
+            [
+                "e4c5b6b0bbfe1c07"
+            ]
+        ]
+    },
+    {
+        "id": "cc50741a586431b1",
+        "type": "http request",
+        "z": "b3945e884a46efb8",
+        "name": "F2: Gemini Embed",
+        "method": "POST",
+        "ret": "obj",
+        "paytoqs": "ignore",
+        "url": "https://generativelanguage.googleapis.com/v1beta/models/gemini-embedding-001:embedContent?key=$(GEMINI_API_KEY)",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [
+            {
+                "keyType": "other",
+                "keyValue": "Content-Type",
+                "valueType": "other",
+                "valueValue": "application/json"
+            }
+        ],
+        "x": 1440,
+        "y": 20,
+        "wires": [
+            [
+                "6f06af2b644d3ea8"
+            ]
+        ]
+    },
+    {
+        "id": "6f06af2b644d3ea8",
+        "type": "function",
+        "z": "b3945e884a46efb8",
+        "name": "F2: Prep Pinecone",
+        "func": "if (!msg.payload.embedding || !msg.payload.embedding.values) {\n    msg.payload = { \"chatId\": msg.chat_id, \"type\": \"message\", \"content\": \"Gagal membuat embedding. Silakan coba lagi.\" };\n    return [null, msg];\n}\nmsg.payload = {\n    \"vector\": msg.payload.embedding.values,\n    \"topK\": 5,\n    \"includeMetadata\": true\n};\nreturn [msg, null];",
+        "outputs": 2,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1740,
+        "y": 20,
+        "wires": [
+            [
+                "c5a2b9b52290c54f"
+            ],
+            [
+                "3cc15dc778c80527"
+            ]
+        ]
+    },
+    {
+        "id": "c5a2b9b52290c54f",
+        "type": "http request",
+        "z": "b3945e884a46efb8",
+        "name": "F2: Pinecone Query",
+        "method": "POST",
+        "ret": "obj",
+        "paytoqs": "ignore",
+        "url": "https://kampus-rag-nb06xn6.svc.aped-4627-b74a.pinecone.io/query",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [
+            {
+                "keyType": "other",
+                "keyValue": "Content-Type",
+                "valueType": "other",
+                "valueValue": "application/json"
+            },
+            {
+                "keyType": "other",
+                "keyValue": "Api-Key",
+                "valueType": "env",
+                "valueValue": "PINECONE_API_KEY"
+            }
+        ],
+        "x": 2130,
+        "y": 20,
+        "wires": [
+            [
+                "9cbdf6d6245ef8aa",
+                "d8411b34dfa890e3"
+            ]
+        ]
+    },
+    {
+        "id": "9cbdf6d6245ef8aa",
+        "type": "function",
+        "z": "b3945e884a46efb8",
+        "name": "F2: Prompt RAG",
+        "func": "let konteks = \"\";\nif (msg.payload && msg.payload.matches) {\n    konteks = msg.payload.matches.map(m => m.metadata.text || m.metadata.teks_asli).join(\"\\n---\\n\");\n}\nlet aturan = \"Kamu adalah asisten film CineChat. Jawab HANYA berdasarkan DATA DATABASE berikut.\\n\\n\" +\n    \"ATURAN FORMAT:\\n\" +\n    \"- Langsung ke inti jawaban, tanpa basa-basi (hindari: Wah, Hehe, pertanyaan menarik, Jadi gini)\\n\" +\n    \"- Maksimal 2-3 paragraf singkat; gunakan bullet (-) jika ada banyak poin\\n\" +\n    \"- Gunakan **tebal** untuk judul film, nama aktor, atau kata kunci penting\\n\" +\n    \"- Maksimal 1 emoji jika relevan; hindari emoji beruntun\\n\" +\n    \"- Jangan tulis baris yang hanya berisi elipsis (...)\\n\" +\n    \"- Bahasa Indonesia sopan, jelas, dan informatif\\n\" +\n    \"- Jika data tidak ditemukan, katakan singkat dan jelas\\n\\n\";\nmsg.payload = {\n    \"contents\": [{\n        \"parts\": [{\"text\": aturan + \"DATA DATABASE:\\n\" + konteks + \"\\n\\nPertanyaan User: \" + msg.pertanyaan}]\n    }]\n};\nreturn msg;",
+        "outputs": 1,
+        "x": 2410,
+        "y": 20,
+        "wires": [
+            [
+                "8d634722cdf5e5d0"
+            ]
+        ]
+    },
+    {
+        "id": "8d634722cdf5e5d0",
+        "type": "http request",
+        "z": "b3945e884a46efb8",
+        "name": "F2: Gemini Chat",
+        "method": "POST",
+        "ret": "obj",
+        "paytoqs": "ignore",
+        "url": "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=$(GEMINI_API_KEY)",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [
+            {
+                "keyType": "other",
+                "keyValue": "Content-Type",
+                "valueType": "other",
+                "valueValue": "application/json"
+            }
+        ],
+        "x": 2630,
+        "y": 20,
+        "wires": [
+            [
+                "738cad92fec51a2d"
+            ]
+        ]
+    },
+    {
+        "id": "1156f7eb77ce04a2",
+        "type": "function",
+        "z": "b3945e884a46efb8",
+        "name": "Clean /sqln",
+        "func": "msg.pertanyaan = msg.pertanyaan.replace(/^\\/sqln\\s*/i, \"\").trim();\nif (!msg.pertanyaan) {\n    msg.payload = { \"chatId\": msg.chat_id, \"type\": \"message\", \"content\": \"Harap masukkan pertanyaan setelah /sqln\" };\n    return [null, msg];\n}\n\n// MENGGUNAKAN KONKATENASI KLASIK (ANTI-ERROR)\nlet contextPrompt = \"TUGAS: Buat query SQL MySQL murni berdasarkan pertanyaan user.\\n\" +\n                    \"STRUKTUR DATABASE (SAKILA STANDAR):\\n\" +\n                    \"1. Tabel 'film' (film_id, title, description)\\n\" +\n                    \"2. Tabel 'actor' (actor_id, first_name, last_name)\\n\" +\n                    \"3. Tabel 'film_actor' (actor_id, film_id)\\n\" +\n                    \"4. Tabel 'category' (category_id, name) -> Berisi nama genre seperti: 'Comedy', 'Action', 'Horror', 'Animation', 'Drama', dll.\\n\" +\n                    \"5. Tabel 'film_category' (film_id, category_id) -> Menghubungkan film dengan genrenya.\\n\\n\" +\n                    \"ATURAN UTAMA:\\n\" +\n                    \"- Analisis intent pertanyaan user (apakah mencari judul, aktor, atau genre/kategori, atau data detail).\\n\" +\n                    \"- Gunakan perintah JOIN yang tepat dan efisien antar tabel.\\n\" +\n                    \"- Jika mencari genre, arahkan ke kolom 'name' pada tabel 'category' (gunakan LOWER atau LIKE agar aman).\\n\" +\n                    \"- JAWAB HANYA STRING SQL MURNI TANPA BACKTICK DAN TANPA TITIK KOMA (;) DI AKHIR.\\n\\n\" +\n                    \"Pertanyaan User: \" + msg.pertanyaan;\n\nmsg.payload = {\n    \"contents\": [{\n        \"parts\": [{\"text\": contextPrompt}]\n    }]\n};\n\nreturn [msg, null];",
+        "outputs": 2,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1140,
+        "y": 240,
+        "wires": [
+            [
+                "257b1a632b707f76"
+            ],
+            [
+                "90b14c7ebd130f11"
+            ]
+        ]
+    },
+    {
+        "id": "257b1a632b707f76",
+        "type": "http request",
+        "z": "b3945e884a46efb8",
+        "name": "F3: Gemini SQL Gen",
+        "method": "POST",
+        "ret": "obj",
+        "paytoqs": "ignore",
+        "url": "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=$(GEMINI_API_KEY)",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [
+            {
+                "keyType": "other",
+                "keyValue": "Content-Type",
+                "valueType": "other",
+                "valueValue": "application/json"
+            }
+        ],
+        "x": 1410,
+        "y": 200,
+        "wires": [
+            [
+                "58ba29b3e239ab01",
+                "366f3fc494f83457"
+            ]
+        ]
+    },
+    {
+        "id": "58ba29b3e239ab01",
+        "type": "function",
+        "z": "b3945e884a46efb8",
+        "name": "F3: Ekstrak SQL",
+        "func": "if (!msg.payload.candidates) {\n    msg.payload = { \"chatId\": msg.chat_id, \"type\": \"message\", \"content\": \"Gagal membuat SQL (Rate Limit). Coba beberapa saat lagi.\" };\n    return [null, msg];\n}\nlet rawText = msg.payload.candidates[0].content.parts[0].text;\nmsg.topic = rawText.replace(/`{3}sql|`{3}/g, \"\").trim();\nmsg.payload = msg.topic;\nreturn [msg, null];",
+        "outputs": 2,
+        "x": 1730,
+        "y": 200,
+        "wires": [
+            [
+                "3a66ac183aa85cfe"
+            ],
+            [
+                "024d8ca06a09cc63"
+            ]
+        ]
+    },
+    {
+        "id": "237d14320dce8877",
+        "type": "function",
+        "z": "b3945e884a46efb8",
+        "name": "F3: Prompt Rangkuman",
+        "func": "let data_db = JSON.stringify(msg.payload);\nlet aturan = \"Kamu adalah asisten film CineChat. Rangkum hasil query SQL untuk menjawab pertanyaan user.\\n\\n\" +\n    \"ATURAN FORMAT:\\n\" +\n    \"- Langsung jawab pertanyaan, tanpa basa-basi atau chat panjang\\n\" +\n    \"- Maksimal 2-3 paragraf singkat; gunakan bullet (-) jika hasil berisi banyak baris\\n\" +\n    \"- Gunakan **tebal** untuk judul film, kategori, aktor, atau angka penting\\n\" +\n    \"- Tanpa emoji berlebihan; jangan tampilkan raw JSON atau SQL ke user\\n\" +\n    \"- Bahasa Indonesia sopan dan mudah dibaca\\n\\n\";\nmsg.payload = {\n    \"contents\": [{\n        \"parts\": [{\"text\": aturan + \"Pertanyaan: '\" + msg.pertanyaan + \"'\\n\\nData Database:\\n\" + data_db}]\n    }]\n};\nreturn msg;",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 2340,
+        "y": 200,
+        "wires": [
+            [
+                "23415af7c848f346"
+            ]
+        ]
+    },
+    {
+        "id": "23415af7c848f346",
+        "type": "http request",
+        "z": "b3945e884a46efb8",
+        "name": "F3: Gemini Rangkuman",
+        "method": "POST",
+        "ret": "obj",
+        "paytoqs": "ignore",
+        "url": "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=$(GEMINI_API_KEY)",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [
+            {
+                "keyType": "other",
+                "keyValue": "Content-Type",
+                "valueType": "other",
+                "valueValue": "application/json"
+            }
+        ],
+        "x": 2660,
+        "y": 200,
+        "wires": [
+            [
+                "fcb705695fa69b79"
+            ]
+        ]
+    },
+    {
+        "id": "27230f580e826c8e",
+        "type": "function",
+        "z": "b3945e884a46efb8",
+        "name": "Clean /sqld",
+        "func": "msg.pertanyaan = msg.pertanyaan.replace(/^\\/sqld\\s*/i, \"\").trim();\nif (!msg.pertanyaan) {\n    msg.payload = { \"chatId\": msg.chat_id, \"type\": \"message\", \"content\": \"Harap masukkan pertanyaan setelah /sqld\" };\n    return [null, msg];\n}\n\nmsg.payload = {\n    \"contents\": [{\n        \"parts\": [{\n            \"text\": \"TUGAS: BUAT QUERY SQL MYSQL UNTUK TABEL DENORMALISASI.\\nTABEL YANG TERSEDIA: 'film_denorm' (film_id, title, description, category, price, length, rating, actors).\\nDILARANG KERAS MENGGUNAKAN JOIN — tabel sudah flat/denormalisasi.\\nDILARANG menggunakan SELECT * — pilih HANYA kolom yang relevan dengan pertanyaan.\\nJAWAB HANYA STRING SQL MURNI TANPA BACKTICK DAN TANPA PENJELASAN.\\n\\nPertanyaan: \" + msg.pertanyaan\n        }]\n    }]\n};\nreturn [msg, null];",
+        "outputs": 2,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1140,
+        "y": 400,
+        "wires": [
+            [
+                "9f850d33e8ff8032"
+            ],
+            [
+                "c991d5571799f6c8"
+            ]
+        ]
+    },
+    {
+        "id": "9f850d33e8ff8032",
+        "type": "http request",
+        "z": "b3945e884a46efb8",
+        "name": "F4: Gemini SQL Gen",
+        "method": "POST",
+        "ret": "obj",
+        "paytoqs": "ignore",
+        "url": "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=$(GEMINI_API_KEY)",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [
+            {
+                "keyType": "other",
+                "keyValue": "Content-Type",
+                "valueType": "other",
+                "valueValue": "application/json"
+            }
+        ],
+        "x": 1450,
+        "y": 380,
+        "wires": [
+            [
+                "cc2559ca2b9b92a6",
+                "a95e12166895a1a2"
+            ]
+        ]
+    },
+    {
+        "id": "cc2559ca2b9b92a6",
+        "type": "function",
+        "z": "b3945e884a46efb8",
+        "name": "F4: Ekstrak SQL",
+        "func": "if (!msg.payload.candidates) {\n    msg.payload = { \"chatId\": msg.chat_id, \"type\": \"message\", \"content\": \"Gagal membuat SQL (Rate Limit). Coba beberapa saat lagi.\" };\n    return [null, msg];\n}\nlet rawText = msg.payload.candidates[0].content.parts[0].text;\nmsg.topic = rawText.replace(/`{3}sql|`{3}/g, \"\").trim();\nmsg.payload = msg.topic;\nreturn [msg, null];",
+        "outputs": 2,
+        "x": 1810,
+        "y": 380,
+        "wires": [
+            [
+                "2990fe390b4256d3"
+            ],
+            [
+                "99c852187df3c06d"
+            ]
+        ]
+    },
+    {
+        "id": "45626fcd01771808",
+        "type": "function",
+        "z": "b3945e884a46efb8",
+        "name": "F4: Prompt Rangkuman",
+        "func": "let data_db = JSON.stringify(msg.payload);\nlet aturan = \"Kamu adalah asisten film CineChat. Rangkum hasil query SQL untuk menjawab pertanyaan user.\\n\\n\" +\n    \"ATURAN FORMAT:\\n\" +\n    \"- Langsung jawab pertanyaan, tanpa basa-basi atau chat panjang\\n\" +\n    \"- Maksimal 2-3 paragraf singkat; gunakan bullet (-) jika hasil berisi banyak baris\\n\" +\n    \"- Gunakan **tebal** untuk judul film, kategori, aktor, atau angka penting\\n\" +\n    \"- Tanpa emoji berlebihan; jangan tampilkan raw JSON atau SQL ke user\\n\" +\n    \"- Bahasa Indonesia sopan dan mudah dibaca\\n\\n\";\nmsg.payload = {\n    \"contents\": [{\n        \"parts\": [{\"text\": aturan + \"Pertanyaan: '\" + msg.pertanyaan + \"'\\n\\nData Database:\\n\" + data_db}]\n    }]\n};\nreturn msg;",
+        "outputs": 1,
+        "x": 2380,
+        "y": 380,
+        "wires": [
+            [
+                "ee5f768b0e04f266"
+            ]
+        ]
+    },
+    {
+        "id": "ee5f768b0e04f266",
+        "type": "http request",
+        "z": "b3945e884a46efb8",
+        "name": "F4: Gemini Rangkuman",
+        "method": "POST",
+        "ret": "obj",
+        "paytoqs": "ignore",
+        "url": "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=$(GEMINI_API_KEY)",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [
+            {
+                "keyType": "other",
+                "keyValue": "Content-Type",
+                "valueType": "other",
+                "valueValue": "application/json"
+            }
+        ],
+        "x": 2660,
+        "y": 380,
+        "wires": [
+            [
+                "ab31a564f4b94642"
+            ]
+        ]
+    },
+    {
+        "id": "a6aab92f1246cdbb",
+        "type": "function",
+        "z": "b3945e884a46efb8",
+        "name": "[AddFilm] Format Jawaban Pesan",
+        "func": "// 1. KONDISI JIKA TERJADI ERROR RESMI DARI GOOGLE GEMINI (Misal: 503 Overload / 429 Rate Limit)\nif (msg.payload && msg.payload.error) {\n    let pesanErrorAsli = msg.payload.error.message || \"Terjadi masalah tidak diketahui.\";\n    let kodeError = msg.payload.error.code || \"503\";\n    \n    const errText = \"⚠️ **Gemini API Error (\" + kodeError + \"):** \" + pesanErrorAsli;\n    msg.res = msg.res || msg._expressRes;\n    msg.payload = { jawaban: errText, content: errText };\n    msg.channelId = msg.chat_id;\n    msg.channel = msg.chat_id;\n    return msg;\n}\n\n// 2. KONDISI CADANGAN JIKA STRUKTUR PAYLOAD KOSONG/TIDAK BERISI JAWABAN\nif (!msg.payload || !msg.payload.candidates) {\n    const errText = \"❌ **Error:** Gagal mendapatkan respons data dari AI. Silakan coba beberapa saat lagi!\";\n    msg.res = msg.res || msg._expressRes;\n    msg.payload = { jawaban: errText, content: errText };\n    msg.channelId = msg.chat_id;\n    msg.channel = msg.chat_id;\n    return msg;\n}\n\n// 3. JALUR SUKSES: JIKA GEMINI BERHASIL MEMBERIKAN JAWABAN RAG\nlet jawaban_ai = msg.payload.candidates[0].content.parts[0].text;\njawaban_ai = jawaban_ai.replace(/\\r\\n/g, \"\\n\").replace(/\\n{3,}/g, \"\\n\\n\").replace(/^\\s*\\.{2,}\\s*$/gm, \"\").trim();\n\n// JALUR PENYELAMAT: Cek jika teks melebihi limit Discord (2000 karakter)\nif (jawaban_ai.length > 2000) {\n    // Potong di 1950 karakter, lalu sambung dengan pesan peringatan\n    jawaban_ai = jawaban_ai.substring(0, 1950) + \"\\n\\n...(Teks terpotong karena batas maksimal 2000 karakter Discord)...\";\n}\n\nmsg.res = msg.res || msg._expressRes;\nmsg.payload = { jawaban: jawaban_ai, content: jawaban_ai };\nmsg.channelId = msg.chat_id;\nmsg.channel = msg.chat_id;\nreturn msg;",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 2990,
+        "y": 540,
+        "wires": [
+            [
+                "43b0e2ac9c1c98d3",
+                "e34f8fea18c7c85f"
+            ]
+        ]
+    },
+    {
+        "id": "d8411b34dfa890e3",
+        "type": "debug",
+        "z": "b3945e884a46efb8",
+        "name": "Cek Hasil Pinecone",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 2380,
+        "y": 80,
+        "wires": []
+    },
+    {
+        "id": "aa54f998e0a9280f",
+        "type": "debug",
+        "z": "b3945e884a46efb8",
+        "name": "Cek Hasil Database",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 2330,
+        "y": 280,
+        "wires": []
+    },
+    {
+        "id": "f1a2f17b44232295",
+        "type": "debug",
+        "z": "b3945e884a46efb8",
+        "name": "Cek Hasil Database",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 2370,
+        "y": 440,
+        "wires": []
+    },
+    {
+        "id": "366f3fc494f83457",
+        "type": "debug",
+        "z": "b3945e884a46efb8",
+        "name": "Cek Balasan Gemini SQL",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1700,
+        "y": 260,
+        "wires": []
+    },
+    {
+        "id": "a95e12166895a1a2",
+        "type": "debug",
+        "z": "b3945e884a46efb8",
+        "name": "Cek Balasan Gemini SQL",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1740,
+        "y": 460,
+        "wires": []
+    },
+    {
+        "id": "43b0e2ac9c1c98d3",
+        "type": "debug",
+        "z": "b3945e884a46efb8",
+        "name": "[AddFilm] Debug Jawaban",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 3330,
+        "y": 600,
+        "wires": []
+    },
+    {
+        "id": "5addcfdc561a4d89",
+        "type": "function",
+        "z": "b3945e884a46efb8",
+        "name": "Clean /addfilm",
+        "func": "msg.pertanyaan = msg.pertanyaan.replace(/^\\/addfilm\\s*/i, \"\").trim();\nif (!msg.pertanyaan) {\n    msg.payload = { \"chatId\": msg.chat_id, \"type\": \"message\", \"content\": \"Format salah! Contoh: !tambahfilm Judul: Iron Man, Genre: Action, Rating: PG, Aktor: Robert Downey Jr\" };\n    return [null, msg];\n}\n\nlet contextPrompt = \"TUGAS: Buat SATU query SQL MySQL INSERT untuk tabel 'film_denorm' SAJA (DILARANG pakai tabel 'film').\\n\" +\n                    \"KOLOM: film_id, title, description, category, price, length, rating, actors\\n\\n\" +\n                    \"PENTING MySQL - WAJIB ikuti format INSERT...SELECT ini (jangan pakai SELECT langsung FROM film_denorm):\\n\" +\n                    \"INSERT INTO film_denorm (film_id, title, description, category, price, length, rating, actors)\\n\" +\n                    \"SELECT (SELECT IFNULL(MAX(film_id),0)+1 FROM (SELECT film_id FROM film_denorm) AS _t), 'JUDUL', 'DESKRIPSI', 'KATEGORI', 4.99, 90, 'PG', 'AKTOR1, AKTOR2'\\n\\n\" +\n                    \"NILAI WAJIB & DEFAULT:\\n\" +\n                    \"- film_id: HARUS subquery (SELECT IFNULL(MAX(film_id),0)+1 FROM (SELECT film_id FROM film_denorm) AS _t)\\n\" +\n                    \"- title: dari input user (wajib)\\n\" +\n                    \"- description: dari input user atau ''\\n\" +\n                    \"- category: dari input user atau 'Drama'\\n\" +\n                    \"- price: default 4.99 (TIDAK BOLEH NULL)\\n\" +\n                    \"- length: default 90 (TIDAK BOLEH NULL)\\n\" +\n                    \"- rating: VARCHAR bebas (contoh: 'PG', 'PG-13', '13+', 'Remaja', 'Semua Umur') dari input user atau default 'PG'\\n\" +\n                    \"- actors: string dipisah koma atau ''\\n\\n\" +\n                    \"ATURAN:\\n\" +\n                    \"- DILARANG NULL pada price, length, rating\\n\" +\n                    \"- rating adalah klasifikasi/usia, BUKAN genre — genre masuk kolom category\\n\" +\n                    \"- DILARANG SELECT ... FROM film_denorm tanpa subquery _t (error ER_UPDATE_TABLE_USED)\\n\" +\n                    \"- JAWAB HANYA STRING SQL MURNI TANPA BACKTICK DAN TANPA TITIK KOMA (;) DI AKHIR\\n\\n\" +\n                    \"Input User: \" + msg.pertanyaan;\n\nmsg.payload = {\n    \"contents\": [{\n        \"parts\": [{\"text\": contextPrompt}]\n    }]\n};\n\nreturn [msg, null];",
+        "outputs": 2,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1150,
+        "y": 540,
+        "wires": [
+            [
+                "fed04473e9181d65"
+            ],
+            [
+                "d0057b7eb0c72237"
+            ]
+        ]
+    },
+    {
+        "id": "fed04473e9181d65",
+        "type": "http request",
+        "z": "b3945e884a46efb8",
+        "name": "F4: Gemini SQL Gen",
+        "method": "POST",
+        "ret": "obj",
+        "paytoqs": "ignore",
+        "url": "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=$(GEMINI_API_KEY)",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [
+            {
+                "keyType": "other",
+                "keyValue": "Content-Type",
+                "valueType": "other",
+                "valueValue": "application/json"
+            }
+        ],
+        "x": 1450,
+        "y": 540,
+        "wires": [
+            [
+                "aa02ca9b63a3e360",
+                "1e55c6b2793b58e5"
+            ]
+        ]
+    },
+    {
+        "id": "aa02ca9b63a3e360",
+        "type": "function",
+        "z": "b3945e884a46efb8",
+        "name": "F4: Ekstrak SQL",
+        "func": "if (!msg.payload.candidates) {\n    msg.payload = { \"chatId\": msg.chat_id, \"type\": \"message\", \"content\": \"Gagal membuat SQL (Rate Limit). Coba beberapa saat lagi.\" };\n    return [null, msg];\n}\nlet rawText = msg.payload.candidates[0].content.parts[0].text;\nmsg.topic = rawText.replace(/`{3}sql|`{3}/g, \"\").trim();\nmsg.payload = msg.topic;\nreturn [msg, null];",
+        "outputs": 2,
+        "x": 1810,
+        "y": 540,
+        "wires": [
+            [
+                "3c4a43a3946ec681"
+            ],
+            [
+                "5f09c572ca6431fd"
+            ]
+        ]
+    },
+    {
+        "id": "926d7ee5cbdad38e",
+        "type": "function",
+        "z": "b3945e884a46efb8",
+        "name": "F4: Prompt Rangkuman",
+        "func": "let status_db = JSON.stringify(msg.payload);\nlet pertanyaan_user = msg.pertanyaan || \"\";\nlet id_chat = msg.chat_id;\n\n// RESET TOTAL OBJEK MSG UNTUK MENGHINDARI JSON PARSE ERROR\nlet cleanMsg = {\n    pertanyaan: pertanyaan_user,\n    chat_id: id_chat,\n    res: msg.res || msg._expressRes,\n    _expressRes: msg._expressRes || msg.res,\n    req: msg.req || msg._httpReq,\n    headers: {\n        \"Content-Type\": \"application/json\"\n    },\n    payload: JSON.stringify({\n        \"contents\": [{\n            \"parts\": [{\n                \"text\": \"Kamu adalah asisten film CineChat. Berikan konfirmasi singkat (1-2 kalimat) bahwa aksi tambah film (Create) berhasil.\\n\\nATURAN: langsung ke inti, tanpa basa-basi atau emoji berlebihan. Gunakan **tebal** untuk judul film jika disebutkan. Bahasa Indonesia sopan.\\n\\nLog Status MySQL:\\n\" + status_db\n            }],\n        }]\n    })\n};\n\nreturn cleanMsg;",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 2380,
+        "y": 540,
+        "wires": [
+            [
+                "805a082860444190"
+            ]
+        ]
+    },
+    {
+        "id": "805a082860444190",
+        "type": "http request",
+        "z": "b3945e884a46efb8",
+        "name": "F4: Gemini Rangkuman",
+        "method": "POST",
+        "ret": "obj",
+        "paytoqs": "ignore",
+        "url": "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=$(GEMINI_API_KEY)",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [
+            {
+                "keyType": "other",
+                "keyValue": "Content-Type",
+                "valueType": "other",
+                "valueValue": "application/json"
+            }
+        ],
+        "x": 2660,
+        "y": 540,
+        "wires": [
+            [
+                "a6aab92f1246cdbb"
+            ]
+        ]
+    },
+    {
+        "id": "fd45262a0e4014c8",
+        "type": "debug",
+        "z": "b3945e884a46efb8",
+        "name": "Cek Hasil Database",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 2370,
+        "y": 600,
+        "wires": []
+    },
+    {
+        "id": "1e55c6b2793b58e5",
+        "type": "debug",
+        "z": "b3945e884a46efb8",
+        "name": "Cek Balasan Gemini SQL",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1740,
+        "y": 620,
+        "wires": []
+    },
+    {
+        "id": "738cad92fec51a2d",
+        "type": "function",
+        "z": "b3945e884a46efb8",
+        "name": "[Vektor] Format Jawaban Pesan",
+        "func": "// 1. KONDISI JIKA TERJADI ERROR RESMI DARI GOOGLE GEMINI (Misal: 503 Overload / 429 Rate Limit)\nif (msg.payload && msg.payload.error) {\n    let pesanErrorAsli = msg.payload.error.message || \"Terjadi masalah tidak diketahui.\";\n    let kodeError = msg.payload.error.code || \"503\";\n    \n    const errText = \"⚠️ **Gemini API Error (\" + kodeError + \"):** \" + pesanErrorAsli;\n    msg.res = msg.res || msg._expressRes;\n    msg.payload = { jawaban: errText, content: errText };\n    msg.channelId = msg.chat_id;\n    msg.channel = msg.chat_id;\n    return msg;\n}\n\n// 2. KONDISI CADANGAN JIKA STRUKTUR PAYLOAD KOSONG/TIDAK BERISI JAWABAN\nif (!msg.payload || !msg.payload.candidates) {\n    const errText = \"❌ **Error:** Gagal mendapatkan respons data dari AI. Silakan coba beberapa saat lagi!\";\n    msg.res = msg.res || msg._expressRes;\n    msg.payload = { jawaban: errText, content: errText };\n    msg.channelId = msg.chat_id;\n    msg.channel = msg.chat_id;\n    return msg;\n}\n\n// 3. JALUR SUKSES: JIKA GEMINI BERHASIL MEMBERIKAN JAWABAN RAG\nlet jawaban_ai = msg.payload.candidates[0].content.parts[0].text;\njawaban_ai = jawaban_ai.replace(/\\r\\n/g, \"\\n\").replace(/\\n{3,}/g, \"\\n\\n\").replace(/^\\s*\\.{2,}\\s*$/gm, \"\").trim();\n\n// JALUR PENYELAMAT: Cek jika teks melebihi limit Discord (2000 karakter)\nif (jawaban_ai.length > 2000) {\n    // Potong di 1950 karakter, lalu sambung dengan pesan peringatan\n    jawaban_ai = jawaban_ai.substring(0, 1950) + \"\\n\\n...(Teks terpotong karena batas maksimal 2000 karakter Discord)...\";\n}\n\nmsg.res = msg.res || msg._expressRes;\nmsg.payload = { jawaban: jawaban_ai, content: jawaban_ai };\nmsg.channelId = msg.chat_id;\nmsg.channel = msg.chat_id;\nreturn msg;",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 2980,
+        "y": 20,
+        "wires": [
+            [
+                "c81a0e1f4c828c37",
+                "b8b816b4d78c4f19"
+            ]
+        ]
+    },
+    {
+        "id": "fcb705695fa69b79",
+        "type": "function",
+        "z": "b3945e884a46efb8",
+        "name": "[Norm] Format Jawaban Pesan",
+        "func": "// 1. KONDISI JIKA TERJADI ERROR RESMI DARI GOOGLE GEMINI (Misal: 503 Overload / 429 Rate Limit)\nif (msg.payload && msg.payload.error) {\n    let pesanErrorAsli = msg.payload.error.message || \"Terjadi masalah tidak diketahui.\";\n    let kodeError = msg.payload.error.code || \"503\";\n    \n    const errText = \"⚠️ **Gemini API Error (\" + kodeError + \"):** \" + pesanErrorAsli;\n    msg.res = msg.res || msg._expressRes;\n    msg.payload = { jawaban: errText, content: errText };\n    msg.channelId = msg.chat_id;\n    msg.channel = msg.chat_id;\n    return msg;\n}\n\n// 2. KONDISI CADANGAN JIKA STRUKTUR PAYLOAD KOSONG/TIDAK BERISI JAWABAN\nif (!msg.payload || !msg.payload.candidates) {\n    const errText = \"❌ **Error:** Gagal mendapatkan respons data dari AI. Silakan coba beberapa saat lagi!\";\n    msg.res = msg.res || msg._expressRes;\n    msg.payload = { jawaban: errText, content: errText };\n    msg.channelId = msg.chat_id;\n    msg.channel = msg.chat_id;\n    return msg;\n}\n\n// 3. JALUR SUKSES: JIKA GEMINI BERHASIL MEMBERIKAN JAWABAN RAG\nlet jawaban_ai = msg.payload.candidates[0].content.parts[0].text;\njawaban_ai = jawaban_ai.replace(/\\r\\n/g, \"\\n\").replace(/\\n{3,}/g, \"\\n\\n\").replace(/^\\s*\\.{2,}\\s*$/gm, \"\").trim();\n\n// JALUR PENYELAMAT: Cek jika teks melebihi limit Discord (2000 karakter)\nif (jawaban_ai.length > 2000) {\n    // Potong di 1950 karakter, lalu sambung dengan pesan peringatan\n    jawaban_ai = jawaban_ai.substring(0, 1950) + \"\\n\\n...(Teks terpotong karena batas maksimal 2000 karakter Discord)...\";\n}\n\nmsg.res = msg.res || msg._expressRes;\nmsg.payload = { jawaban: jawaban_ai, content: jawaban_ai };\nmsg.channelId = msg.chat_id;\nmsg.channel = msg.chat_id;\nreturn msg;",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 2980,
+        "y": 200,
+        "wires": [
+            [
+                "f0a8daa391d46cab",
+                "40c633ade032f802"
+            ]
+        ]
+    },
+    {
+        "id": "ab31a564f4b94642",
+        "type": "function",
+        "z": "b3945e884a46efb8",
+        "name": "[Denorm] Format Jawaban Pesan",
+        "func": "// 1. KONDISI JIKA TERJADI ERROR RESMI DARI GOOGLE GEMINI (Misal: 503 Overload / 429 Rate Limit)\nif (msg.payload && msg.payload.error) {\n    let pesanErrorAsli = msg.payload.error.message || \"Terjadi masalah tidak diketahui.\";\n    let kodeError = msg.payload.error.code || \"503\";\n    \n    const errText = \"⚠️ **Gemini API Error (\" + kodeError + \"):** \" + pesanErrorAsli;\n    msg.res = msg.res || msg._expressRes;\n    msg.payload = { jawaban: errText, content: errText };\n    msg.channelId = msg.chat_id;\n    msg.channel = msg.chat_id;\n    return msg;\n}\n\n// 2. KONDISI CADANGAN JIKA STRUKTUR PAYLOAD KOSONG/TIDAK BERISI JAWABAN\nif (!msg.payload || !msg.payload.candidates) {\n    const errText = \"❌ **Error:** Gagal mendapatkan respons data dari AI. Silakan coba beberapa saat lagi!\";\n    msg.res = msg.res || msg._expressRes;\n    msg.payload = { jawaban: errText, content: errText };\n    msg.channelId = msg.chat_id;\n    msg.channel = msg.chat_id;\n    return msg;\n}\n\n// 3. JALUR SUKSES: JIKA GEMINI BERHASIL MEMBERIKAN JAWABAN RAG\nlet jawaban_ai = msg.payload.candidates[0].content.parts[0].text;\njawaban_ai = jawaban_ai.replace(/\\r\\n/g, \"\\n\").replace(/\\n{3,}/g, \"\\n\\n\").replace(/^\\s*\\.{2,}\\s*$/gm, \"\").trim();\n\n// JALUR PENYELAMAT: Cek jika teks melebihi limit Discord (2000 karakter)\nif (jawaban_ai.length > 2000) {\n    // Potong di 1950 karakter, lalu sambung dengan pesan peringatan\n    jawaban_ai = jawaban_ai.substring(0, 1950) + \"\\n\\n...(Teks terpotong karena batas maksimal 2000 karakter Discord)...\";\n}\n\nmsg.res = msg.res || msg._expressRes;\nmsg.payload = { jawaban: jawaban_ai, content: jawaban_ai };\nmsg.channelId = msg.chat_id;\nmsg.channel = msg.chat_id;\nreturn msg;",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 2990,
+        "y": 380,
+        "wires": [
+            [
+                "8204a033c34585f3",
+                "99d52a523c3a169b"
+            ]
+        ]
+    },
+    {
+        "id": "c81a0e1f4c828c37",
+        "type": "debug",
+        "z": "b3945e884a46efb8",
+        "name": "[Vektor] Debug Jawaban",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 3320,
+        "y": 80,
+        "wires": []
+    },
+    {
+        "id": "f0a8daa391d46cab",
+        "type": "debug",
+        "z": "b3945e884a46efb8",
+        "name": "[Norm] Debug Jawaban",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 3320,
+        "y": 260,
+        "wires": []
+    },
+    {
+        "id": "8204a033c34585f3",
+        "type": "debug",
+        "z": "b3945e884a46efb8",
+        "name": "[Denorm] Debug Jawaban",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 3320,
+        "y": 440,
+        "wires": []
+    },
+    {
+        "id": "8878efc02a9184bb",
+        "type": "function",
+        "z": "b3945e884a46efb8",
+        "name": "[EditFilm] Format Jawaban Pesan",
+        "func": "// 1. KONDISI JIKA TERJADI ERROR RESMI DARI GOOGLE GEMINI (Misal: 503 Overload / 429 Rate Limit)\nif (msg.payload && msg.payload.error) {\n    let pesanErrorAsli = msg.payload.error.message || \"Terjadi masalah tidak diketahui.\";\n    let kodeError = msg.payload.error.code || \"503\";\n    \n    const errText = \"⚠️ **Gemini API Error (\" + kodeError + \"):** \" + pesanErrorAsli;\n    msg.res = msg.res || msg._expressRes;\n    msg.payload = { jawaban: errText, content: errText };\n    msg.channelId = msg.chat_id;\n    msg.channel = msg.chat_id;\n    return msg;\n}\n\n// 2. KONDISI CADANGAN JIKA STRUKTUR PAYLOAD KOSONG/TIDAK BERISI JAWABAN\nif (!msg.payload || !msg.payload.candidates) {\n    const errText = \"❌ **Error:** Gagal mendapatkan respons data dari AI. Silakan coba beberapa saat lagi!\";\n    msg.res = msg.res || msg._expressRes;\n    msg.payload = { jawaban: errText, content: errText };\n    msg.channelId = msg.chat_id;\n    msg.channel = msg.chat_id;\n    return msg;\n}\n\n// 3. JALUR SUKSES: JIKA GEMINI BERHASIL MEMBERIKAN JAWABAN RAG\nlet jawaban_ai = msg.payload.candidates[0].content.parts[0].text;\njawaban_ai = jawaban_ai.replace(/\\r\\n/g, \"\\n\").replace(/\\n{3,}/g, \"\\n\\n\").replace(/^\\s*\\.{2,}\\s*$/gm, \"\").trim();\n\n// JALUR PENYELAMAT: Cek jika teks melebihi limit Discord (2000 karakter)\nif (jawaban_ai.length > 2000) {\n    // Potong di 1950 karakter, lalu sambung dengan pesan peringatan\n    jawaban_ai = jawaban_ai.substring(0, 1950) + \"\\n\\n...(Teks terpotong karena batas maksimal 2000 karakter Discord)...\";\n}\n\nmsg.res = msg.res || msg._expressRes;\nmsg.payload = { jawaban: jawaban_ai, content: jawaban_ai };\nmsg.channelId = msg.chat_id;\nmsg.channel = msg.chat_id;\nreturn msg;",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 2990,
+        "y": 740,
+        "wires": [
+            [
+                "28c117fdedd093a2",
+                "0fab932d5d856f67"
+            ]
+        ]
+    },
+    {
+        "id": "28c117fdedd093a2",
+        "type": "debug",
+        "z": "b3945e884a46efb8",
+        "name": "[EditFilm] Debug Jawaban",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 3320,
+        "y": 800,
+        "wires": []
+    },
+    {
+        "id": "b21cf6bf051be150",
+        "type": "function",
+        "z": "b3945e884a46efb8",
+        "name": "Clean /editfilm",
+        "func": "msg.pertanyaan = msg.pertanyaan.replace(/^\\/editfilm\\s*/i, \"\").trim();\nif (!msg.pertanyaan) {\n    msg.payload = { \"chatId\": msg.chat_id, \"type\": \"message\", \"content\": \"Format salah! Contoh: !ubahfilm Ganti rating film ACADEMY DINOSAUR menjadi R\" };\n    return [null, msg];\n}\n\nlet contextPrompt = \"TUGAS: Buat query SQL MySQL UPDATE murni untuk tabel 'film_denorm' berdasarkan permintaan user.\\n\" +\n                    \"STRUKTUR TABEL 'film_denorm': film_id, title, description, category, price, length, rating, actors.\\n\\n\" +\n                    \"ATURAN:\\n\" +\n                    \"- Tentukan judul film atau film_id yang ingin diubah untuk diletakkan di klausa WHERE.\\n\" +\n                    \"- Tentukan kolom apa saja yang ingin diperbarui beserta nilai barunya di klausa SET.\\n\" +\n                    \"- JAWAB HANYA STRING SQL MURNI TANPA BACKTICK DAN TANPA TITIK KOMA (;) DI AKHIR.\\n\\n\" +\n                    \"Permintaan User: \" + msg.pertanyaan;\n\nmsg.payload = {\n    \"contents\": [{\n        \"parts\": [{\"text\": contextPrompt}]\n    }]\n};\n\nreturn [msg, null];",
+        "outputs": 2,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1150,
+        "y": 740,
+        "wires": [
+            [
+                "1b9af0cf738aa891"
+            ],
+            [
+                "bf78c1f94f8f0ec4"
+            ]
+        ]
+    },
+    {
+        "id": "1b9af0cf738aa891",
+        "type": "http request",
+        "z": "b3945e884a46efb8",
+        "name": "F4: Gemini SQL Gen",
+        "method": "POST",
+        "ret": "obj",
+        "paytoqs": "ignore",
+        "url": "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=$(GEMINI_API_KEY)",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [
+            {
+                "keyType": "other",
+                "keyValue": "Content-Type",
+                "valueType": "other",
+                "valueValue": "application/json"
+            }
+        ],
+        "x": 1450,
+        "y": 740,
+        "wires": [
+            [
+                "62996862cdaea804",
+                "35ba3482dbcc2bc6"
+            ]
+        ]
+    },
+    {
+        "id": "62996862cdaea804",
+        "type": "function",
+        "z": "b3945e884a46efb8",
+        "name": "F4: Ekstrak SQL",
+        "func": "if (!msg.payload.candidates) {\n    msg.payload = { \"chatId\": msg.chat_id, \"type\": \"message\", \"content\": \"Gagal membuat SQL (Rate Limit). Coba beberapa saat lagi.\" };\n    return [null, msg];\n}\nlet rawText = msg.payload.candidates[0].content.parts[0].text;\nmsg.topic = rawText.replace(/`{3}sql|`{3}/g, \"\").trim();\nmsg.payload = msg.topic;\nreturn [msg, null];",
+        "outputs": 2,
+        "x": 1810,
+        "y": 740,
+        "wires": [
+            [
+                "0bb871e5cb2b2111"
+            ],
+            [
+                "fc74fc80d0794d4f"
+            ]
+        ]
+    },
+    {
+        "id": "19da59cde91924eb",
+        "type": "function",
+        "z": "b3945e884a46efb8",
+        "name": "F4: Prompt Rangkuman",
+        "func": "let status_db = JSON.stringify(msg.payload);\nlet pertanyaan_user = msg.pertanyaan || \"\";\nlet id_chat = msg.chat_id;\n\n// RESET TOTAL OBJEK MSG UNTUK MENGHINDARI JSON PARSE ERROR\nlet cleanMsg = {\n    pertanyaan: pertanyaan_user,\n    chat_id: id_chat,\n    res: msg.res || msg._expressRes,\n    _expressRes: msg._expressRes || msg.res,\n    req: msg.req || msg._httpReq,\n    headers: {\n        \"Content-Type\": \"application/json\"\n    },\n    payload: JSON.stringify({\n        \"contents\": [{\n            \"parts\": [{\n                \"text\": \"Kamu adalah asisten film CineChat. Berikan konfirmasi singkat (1-2 kalimat) bahwa aksi ubah film (Update) berhasil.\\n\\nATURAN: langsung ke inti, tanpa basa-basi atau emoji berlebihan. Gunakan **tebal** untuk judul film jika disebutkan. Bahasa Indonesia sopan.\\n\\nLog Status MySQL:\\n\" + status_db\n            }],\n        }]\n    })\n};\n\nreturn cleanMsg;",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 2380,
+        "y": 740,
+        "wires": [
+            [
+                "fb9e791ea941e62c"
+            ]
+        ]
+    },
+    {
+        "id": "fb9e791ea941e62c",
+        "type": "http request",
+        "z": "b3945e884a46efb8",
+        "name": "F4: Gemini Rangkuman",
+        "method": "POST",
+        "ret": "obj",
+        "paytoqs": "ignore",
+        "url": "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=$(GEMINI_API_KEY)",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [
+            {
+                "keyType": "other",
+                "keyValue": "Content-Type",
+                "valueType": "other",
+                "valueValue": "application/json"
+            }
+        ],
+        "x": 2660,
+        "y": 740,
+        "wires": [
+            [
+                "8878efc02a9184bb"
+            ]
+        ]
+    },
+    {
+        "id": "3dae10c15280037f",
+        "type": "debug",
+        "z": "b3945e884a46efb8",
+        "name": "Cek Hasil Database",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 2370,
+        "y": 800,
+        "wires": []
+    },
+    {
+        "id": "35ba3482dbcc2bc6",
+        "type": "debug",
+        "z": "b3945e884a46efb8",
+        "name": "Cek Balasan Gemini SQL",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1740,
+        "y": 820,
+        "wires": []
+    },
+    {
+        "id": "d8d312f784824542",
+        "type": "function",
+        "z": "b3945e884a46efb8",
+        "name": "[DelFilm] Format Jawaban Pesan",
+        "func": "// 1. KONDISI JIKA TERJADI ERROR RESMI DARI GOOGLE GEMINI (Misal: 503 Overload / 429 Rate Limit)\nif (msg.payload && msg.payload.error) {\n    let pesanErrorAsli = msg.payload.error.message || \"Terjadi masalah tidak diketahui.\";\n    let kodeError = msg.payload.error.code || \"503\";\n    \n    const errText = \"⚠️ **Gemini API Error (\" + kodeError + \"):** \" + pesanErrorAsli;\n    msg.res = msg.res || msg._expressRes;\n    msg.payload = { jawaban: errText, content: errText };\n    msg.channelId = msg.chat_id;\n    msg.channel = msg.chat_id;\n    return msg;\n}\n\n// 2. KONDISI CADANGAN JIKA STRUKTUR PAYLOAD KOSONG/TIDAK BERISI JAWABAN\nif (!msg.payload || !msg.payload.candidates) {\n    const errText = \"❌ **Error:** Gagal mendapatkan respons data dari AI. Silakan coba beberapa saat lagi!\";\n    msg.res = msg.res || msg._expressRes;\n    msg.payload = { jawaban: errText, content: errText };\n    msg.channelId = msg.chat_id;\n    msg.channel = msg.chat_id;\n    return msg;\n}\n\n// 3. JALUR SUKSES: JIKA GEMINI BERHASIL MEMBERIKAN JAWABAN RAG\nlet jawaban_ai = msg.payload.candidates[0].content.parts[0].text;\njawaban_ai = jawaban_ai.replace(/\\r\\n/g, \"\\n\").replace(/\\n{3,}/g, \"\\n\\n\").replace(/^\\s*\\.{2,}\\s*$/gm, \"\").trim();\n\n// JALUR PENYELAMAT: Cek jika teks melebihi limit Discord (2000 karakter)\nif (jawaban_ai.length > 2000) {\n    // Potong di 1950 karakter, lalu sambung dengan pesan peringatan\n    jawaban_ai = jawaban_ai.substring(0, 1950) + \"\\n\\n...(Teks terpotong karena batas maksimal 2000 karakter Discord)...\";\n}\n\nmsg.res = msg.res || msg._expressRes;\nmsg.payload = { jawaban: jawaban_ai, content: jawaban_ai };\nmsg.channelId = msg.chat_id;\nmsg.channel = msg.chat_id;\nreturn msg;",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 2990,
+        "y": 960,
+        "wires": [
+            [
+                "fd0ad06bf7c123e9",
+                "1c6b69cfced14acc"
+            ]
+        ]
+    },
+    {
+        "id": "fd0ad06bf7c123e9",
+        "type": "debug",
+        "z": "b3945e884a46efb8",
+        "name": "[DelFilm] Debug Jawaban",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 3320,
+        "y": 1020,
+        "wires": []
+    },
+    {
+        "id": "625882b72d78f409",
+        "type": "function",
+        "z": "b3945e884a46efb8",
+        "name": "Clean /delfilm",
+        "func": "msg.pertanyaan = msg.pertanyaan.replace(/^\\/delfilm\\s*/i, \"\").trim();\nif (!msg.pertanyaan) {\n    msg.payload = { \"chatId\": msg.chat_id, \"type\": \"message\", \"content\": \"Format salah! Contoh: !hapusfilm CENTER DINOSAUR\" };\n    return [null, msg];\n}\n\nlet contextPrompt = \"TUGAS: Buat query SQL MySQL DELETE murni untuk tabel 'film_denorm' berdasarkan permintaan user.\\n\" +\n                    \"STRUKTUR TABEL 'film_denorm': film_id, title, description, category, price, length, rating, actors.\\n\\n\" +\n                    \"ATURAN:\\n\" +\n                    \"- Cari tahu judul film atau film_id yang ingin dihapus untuk dimasukkan ke klausa WHERE.\\n\" +\n                    \"- JAWAB HANYA STRING SQL MURNI TANPA BACKTICK DAN TANPA TITIK KOMA (;) DI AKHIR.\\n\\n\" +\n                    \"Permintaan User: \" + msg.pertanyaan;\n\nmsg.payload = {\n    \"contents\": [{\n        \"parts\": [{\"text\": contextPrompt}]\n    }]\n};\n\nreturn [msg, null];",
+        "outputs": 2,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1150,
+        "y": 960,
+        "wires": [
+            [
+                "ce7815780caf0953"
+            ],
+            [
+                "6e05e214f943f906"
+            ]
+        ]
+    },
+    {
+        "id": "ce7815780caf0953",
+        "type": "http request",
+        "z": "b3945e884a46efb8",
+        "name": "F4: Gemini SQL Gen",
+        "method": "POST",
+        "ret": "obj",
+        "paytoqs": "ignore",
+        "url": "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=$(GEMINI_API_KEY)",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [
+            {
+                "keyType": "other",
+                "keyValue": "Content-Type",
+                "valueType": "other",
+                "valueValue": "application/json"
+            }
+        ],
+        "x": 1450,
+        "y": 960,
+        "wires": [
+            [
+                "7bf9e065e469e4ae",
+                "dffb903a21e5fdfe"
+            ]
+        ]
+    },
+    {
+        "id": "7bf9e065e469e4ae",
+        "type": "function",
+        "z": "b3945e884a46efb8",
+        "name": "F4: Ekstrak SQL",
+        "func": "if (!msg.payload.candidates) {\n    msg.payload = { \"chatId\": msg.chat_id, \"type\": \"message\", \"content\": \"Gagal membuat SQL (Rate Limit). Coba beberapa saat lagi.\" };\n    return [null, msg];\n}\nlet rawText = msg.payload.candidates[0].content.parts[0].text;\nmsg.topic = rawText.replace(/`{3}sql|`{3}/g, \"\").trim();\nmsg.payload = msg.topic;\nreturn [msg, null];",
+        "outputs": 2,
+        "x": 1810,
+        "y": 960,
+        "wires": [
+            [
+                "ec095b3b8b3a8aa7"
+            ],
+            [
+                "5c7fb75306358f76"
+            ]
+        ]
+    },
+    {
+        "id": "cededdae5d868c0f",
+        "type": "function",
+        "z": "b3945e884a46efb8",
+        "name": "F4: Prompt Rangkuman",
+        "func": "let status_db = JSON.stringify(msg.payload);\nlet pertanyaan_user = msg.pertanyaan || \"\";\nlet id_chat = msg.chat_id;\n\n// RESET TOTAL OBJEK MSG UNTUK MENGHINDARI JSON PARSE ERROR\nlet cleanMsg = {\n    pertanyaan: pertanyaan_user,\n    chat_id: id_chat,\n    res: msg.res || msg._expressRes,\n    _expressRes: msg._expressRes || msg.res,\n    req: msg.req || msg._httpReq,\n    headers: {\n        \"Content-Type\": \"application/json\"\n    },\n    payload: JSON.stringify({\n        \"contents\": [{\n            \"parts\": [{\n                \"text\": \"Kamu adalah asisten film CineChat. Berikan konfirmasi singkat (1-2 kalimat) bahwa aksi hapus film (Delete) berhasil.\\n\\nATURAN: langsung ke inti, tanpa basa-basi atau emoji berlebihan. Gunakan **tebal** untuk judul film jika disebutkan. Bahasa Indonesia sopan.\\n\\nLog Status MySQL:\\n\" + status_db\n            }],\n        }]\n    })\n};\n\nreturn cleanMsg;",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 2380,
+        "y": 960,
+        "wires": [
+            [
+                "d0f6c3a0d578368d"
+            ]
+        ]
+    },
+    {
+        "id": "d0f6c3a0d578368d",
+        "type": "http request",
+        "z": "b3945e884a46efb8",
+        "name": "F4: Gemini Rangkuman",
+        "method": "POST",
+        "ret": "obj",
+        "paytoqs": "ignore",
+        "url": "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=$(GEMINI_API_KEY)",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [
+            {
+                "keyType": "other",
+                "keyValue": "Content-Type",
+                "valueType": "other",
+                "valueValue": "application/json"
+            }
+        ],
+        "x": 2660,
+        "y": 960,
+        "wires": [
+            [
+                "d8d312f784824542"
+            ]
+        ]
+    },
+    {
+        "id": "7e5b7b482c7cb342",
+        "type": "debug",
+        "z": "b3945e884a46efb8",
+        "name": "Cek Hasil Database",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 2370,
+        "y": 1020,
+        "wires": []
+    },
+    {
+        "id": "dffb903a21e5fdfe",
+        "type": "debug",
+        "z": "b3945e884a46efb8",
+        "name": "Cek Balasan Gemini SQL",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1740,
+        "y": 1040,
+        "wires": []
+    },
+    {
+        "id": "2232486a3a6957ad",
+        "type": "function",
+        "z": "b3945e884a46efb8",
+        "name": "Extract Msg & Chat ID",
+        "func": "if (msg.payload && typeof msg.payload === \"string\") {\n    msg.pertanyaan = msg.payload; \n    msg.chat_id = msg.chat_id || \"web-session\";\n}\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 520,
+        "y": 480,
+        "wires": [
+            [
+                "cd9507401d0e2dfa"
+            ]
+        ]
+    },
+    {
+        "id": "3db986f17f8317d1",
+        "type": "function",
+        "z": "b3945e884a46efb8",
+        "name": "Web UI Intent Adapter",
+        "func": "if (msg.payload && msg.payload.pertanyaan) {\n    let userMode = msg.payload.mode || \"rag\";\n    let teksUser = msg.payload.pertanyaan.trim();\n    const sessionId = msg.payload.sessionId || msg.chat_id || \"web-session\";\n    \n    // Otomatis bungkus ke format command agar lolos filter Regex Router\n    if (userMode === \"rag\") {\n        msg.payload = \"/rag \" + teksUser;\n    } else if (userMode === \"oltp\") {\n        msg.payload = \"/sqln \" + teksUser;\n    } else if (userMode === \"dwh\") {\n        msg.payload = \"/sqld \" + teksUser;\n    } else if (userMode === \"addfilm\") {\n        msg.payload = \"/addfilm \" + teksUser;\n    } else if (userMode === \"editfilm\") {\n        msg.payload = \"/editfilm \" + teksUser;\n    } else if (userMode === \"delfilm\") {\n        msg.payload = \"/delfilm \" + teksUser;\n    } else {\n        msg.payload = teksUser;\n    }\n    \n    msg.chat_id = sessionId;\n    msg._expressRes = msg.res;\n    msg._httpReq = msg.req;\n}\nreturn msg;",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 300,
+        "y": 480,
+        "wires": [
+            [
+                "2232486a3a6957ad"
+            ]
+        ]
+    },
+    {
+        "id": "3bc4fc4bab97e2e9",
+        "type": "http in",
+        "z": "b3945e884a46efb8",
+        "name": "POST /api/chat",
+        "url": "/api/chat",
+        "method": "post",
+        "upload": false,
+        "skipBodyParsing": false,
+        "swaggerDoc": "",
+        "x": 100,
+        "y": 480,
+        "wires": [
+            [
+                "3db986f17f8317d1"
+            ]
+        ]
+    },
+    {
+        "id": "e4c5b6b0bbfe1c07",
+        "type": "http response",
+        "z": "b3945e884a46efb8",
+        "name": "Send Back To Express",
+        "statusCode": "200",
+        "headers": {
+            "content-type": "application/json"
+        },
+        "x": 1440,
+        "y": 80,
+        "wires": []
+    },
+    {
+        "id": "90b14c7ebd130f11",
+        "type": "http response",
+        "z": "b3945e884a46efb8",
+        "name": "Send Back To Express",
+        "statusCode": "200",
+        "headers": {
+            "content-type": "application/json"
+        },
+        "x": 1420,
+        "y": 260,
+        "wires": []
+    },
+    {
+        "id": "c991d5571799f6c8",
+        "type": "http response",
+        "z": "b3945e884a46efb8",
+        "name": "Send Back To Express",
+        "statusCode": "200",
+        "headers": {
+            "content-type": "application/json"
+        },
+        "x": 1440,
+        "y": 440,
+        "wires": []
+    },
+    {
+        "id": "d0057b7eb0c72237",
+        "type": "http response",
+        "z": "b3945e884a46efb8",
+        "name": "Send Back To Express",
+        "statusCode": "200",
+        "headers": {
+            "content-type": "application/json"
+        },
+        "x": 1440,
+        "y": 600,
+        "wires": []
+    },
+    {
+        "id": "bf78c1f94f8f0ec4",
+        "type": "http response",
+        "z": "b3945e884a46efb8",
+        "name": "Send Back To Express",
+        "statusCode": "200",
+        "headers": {
+            "content-type": "application/json"
+        },
+        "x": 1440,
+        "y": 820,
+        "wires": []
+    },
+    {
+        "id": "6e05e214f943f906",
+        "type": "http response",
+        "z": "b3945e884a46efb8",
+        "name": "Send Back To Express",
+        "statusCode": "200",
+        "headers": {
+            "content-type": "application/json"
+        },
+        "x": 1440,
+        "y": 1020,
+        "wires": []
+    },
+    {
+        "id": "f711aab9755ffeb5",
+        "type": "http response",
+        "z": "b3945e884a46efb8",
+        "name": "Send Back To Express",
+        "statusCode": "200",
+        "headers": {
+            "content-type": "application/json"
+        },
+        "x": 1420,
+        "y": 1160,
+        "wires": []
+    },
+    {
+        "id": "3cc15dc778c80527",
+        "type": "http response",
+        "z": "b3945e884a46efb8",
+        "name": "Send Back To Express",
+        "statusCode": "200",
+        "headers": {
+            "content-type": "application/json"
+        },
+        "x": 2120,
+        "y": 80,
+        "wires": []
+    },
+    {
+        "id": "024d8ca06a09cc63",
+        "type": "http response",
+        "z": "b3945e884a46efb8",
+        "name": "Send Back To Express",
+        "statusCode": "200",
+        "headers": {
+            "content-type": "application/json"
+        },
+        "x": 2040,
+        "y": 260,
+        "wires": []
+    },
+    {
+        "id": "99c852187df3c06d",
+        "type": "http response",
+        "z": "b3945e884a46efb8",
+        "name": "Send Back To Express",
+        "statusCode": "200",
+        "headers": {
+            "content-type": "application/json"
+        },
+        "x": 2060,
+        "y": 440,
+        "wires": []
+    },
+    {
+        "id": "5f09c572ca6431fd",
+        "type": "http response",
+        "z": "b3945e884a46efb8",
+        "name": "Send Back To Express",
+        "statusCode": "200",
+        "headers": {
+            "content-type": "application/json"
+        },
+        "x": 2060,
+        "y": 600,
+        "wires": []
+    },
+    {
+        "id": "fc74fc80d0794d4f",
+        "type": "http response",
+        "z": "b3945e884a46efb8",
+        "name": "Send Back To Express",
+        "statusCode": "200",
+        "headers": {
+            "content-type": "application/json"
+        },
+        "x": 2060,
+        "y": 820,
+        "wires": []
+    },
+    {
+        "id": "5c7fb75306358f76",
+        "type": "http response",
+        "z": "b3945e884a46efb8",
+        "name": "Send Back To Express",
+        "statusCode": "200",
+        "headers": {
+            "content-type": "application/json"
+        },
+        "x": 2060,
+        "y": 1020,
+        "wires": []
+    },
+    {
+        "id": "b8b816b4d78c4f19",
+        "type": "http response",
+        "z": "b3945e884a46efb8",
+        "name": "Send Back To Express",
+        "statusCode": "200",
+        "headers": {
+            "content-type": "application/json"
+        },
+        "x": 3320,
+        "y": 20,
+        "wires": []
+    },
+    {
+        "id": "40c633ade032f802",
+        "type": "http response",
+        "z": "b3945e884a46efb8",
+        "name": "Send Back To Express",
+        "statusCode": "200",
+        "headers": {
+            "content-type": "application/json"
+        },
+        "x": 3320,
+        "y": 200,
+        "wires": []
+    },
+    {
+        "id": "99d52a523c3a169b",
+        "type": "http response",
+        "z": "b3945e884a46efb8",
+        "name": "Send Back To Express",
+        "statusCode": "200",
+        "headers": {
+            "content-type": "application/json"
+        },
+        "x": 3320,
+        "y": 380,
+        "wires": []
+    },
+    {
+        "id": "e34f8fea18c7c85f",
+        "type": "http response",
+        "z": "b3945e884a46efb8",
+        "name": "Send Back To Express",
+        "statusCode": "200",
+        "headers": {
+            "content-type": "application/json"
+        },
+        "x": 3320,
+        "y": 540,
+        "wires": []
+    },
+    {
+        "id": "0fab932d5d856f67",
+        "type": "http response",
+        "z": "b3945e884a46efb8",
+        "name": "Send Back To Express",
+        "statusCode": "200",
+        "headers": {
+            "content-type": "application/json"
+        },
+        "x": 3320,
+        "y": 740,
+        "wires": []
+    },
+    {
+        "id": "1c6b69cfced14acc",
+        "type": "http response",
+        "z": "b3945e884a46efb8",
+        "name": "Send Back To Express",
+        "statusCode": "200",
+        "headers": {
+            "content-type": "application/json"
+        },
+        "x": 3320,
+        "y": 960,
+        "wires": []
+    },
+    {
+        "id": "3a66ac183aa85cfe",
+        "type": "mysql",
+        "z": "b3945e884a46efb8",
+        "mydb": "de0d2809d2f8c59f",
+        "name": "F3: Database Sakila",
+        "x": 2010,
+        "y": 200,
+        "wires": [
+            [
+                "237d14320dce8877",
+                "aa54f998e0a9280f"
+            ]
+        ]
+    },
+    {
+        "id": "2990fe390b4256d3",
+        "type": "mysql",
+        "z": "b3945e884a46efb8",
+        "mydb": "de0d2809d2f8c59f",
+        "name": "F4: Database Sakila",
+        "x": 2070,
+        "y": 380,
+        "wires": [
+            [
+                "45626fcd01771808",
+                "f1a2f17b44232295"
+            ]
+        ]
+    },
+    {
+        "id": "3c4a43a3946ec681",
+        "type": "mysql",
+        "z": "b3945e884a46efb8",
+        "mydb": "de0d2809d2f8c59f",
+        "name": "F4: Database Sakila",
+        "x": 2070,
+        "y": 540,
+        "wires": [
+            [
+                "926d7ee5cbdad38e",
+                "fd45262a0e4014c8"
+            ]
+        ]
+    },
+    {
+        "id": "0bb871e5cb2b2111",
+        "type": "mysql",
+        "z": "b3945e884a46efb8",
+        "mydb": "de0d2809d2f8c59f",
+        "name": "F4: Database Sakila",
+        "x": 2070,
+        "y": 740,
+        "wires": [
+            [
+                "19da59cde91924eb",
+                "3dae10c15280037f"
+            ]
+        ]
+    },
+    {
+        "id": "ec095b3b8b3a8aa7",
+        "type": "mysql",
+        "z": "b3945e884a46efb8",
+        "mydb": "de0d2809d2f8c59f",
+        "name": "F4: Database Sakila",
+        "x": 2070,
+        "y": 960,
+        "wires": [
+            [
+                "cededdae5d868c0f",
+                "7e5b7b482c7cb342"
+            ]
+        ]
+    }
+]

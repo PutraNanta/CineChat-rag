@@ -11,8 +11,17 @@ function extractAnswer(payload, mode) {
   if (typeof payload.jawaban === "string" && payload.jawaban.trim()) {
     return payload.jawaban.trim();
   }
+  if (typeof payload.content === "string" && payload.content.trim()) {
+    return payload.content.trim();
+  }
   if (typeof payload?.data?.jawaban === "string" && payload.data.jawaban.trim()) {
     return payload.data.jawaban.trim();
+  }
+  if (typeof payload?.data?.content === "string" && payload.data.content.trim()) {
+    return payload.data.content.trim();
+  }
+  if (typeof payload?.payload?.content === "string" && payload.payload.content.trim()) {
+    return payload.payload.content.trim();
   }
 
   // Dukung format OpenAI mentah jika suatu saat di-return langsung
@@ -26,9 +35,11 @@ function extractAnswer(payload, mode) {
     payload.response,
     payload.output,
     payload.reply,
+    payload.content,
     payload.message,
     payload?.data?.answer,
     payload?.data?.response,
+    payload?.data?.content,
   ];
 
   const found = candidates.find((item) => typeof item === "string" && item.trim().length > 0);
@@ -96,7 +107,7 @@ function resolveTargetUrl(rawUrl, mode) {
 }
 
 export async function requestNodeRed({ mode, message, sessionId }) {
-  const rawTargetUrl = env.NODE_RED_ENDPOINTS[mode];
+  const rawTargetUrl = env.NODE_RED_URL;
 
   if (!rawTargetUrl) {
     return {

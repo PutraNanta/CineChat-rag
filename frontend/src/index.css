@@ -183,6 +183,82 @@ body {
   background: #eff6ff;
 }
 
+.chat-message-prose {
+  display: grid;
+  gap: 10px;
+  max-width: 100%;
+  font-size: 14px;
+  line-height: 1.65;
+  color: hsl(var(--foreground));
+}
+
+.chat-message-prose__paragraph {
+  margin: 0;
+}
+
+.chat-message-prose__heading {
+  margin: 0;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.chat-message-prose h3.chat-message-prose__heading {
+  font-size: 15px;
+}
+
+.chat-message-prose h4.chat-message-prose__heading,
+.chat-message-prose h5.chat-message-prose__heading {
+  font-size: 14px;
+}
+
+.chat-message-prose__list {
+  margin: 0;
+  padding-left: 20px;
+  display: grid;
+  gap: 6px;
+}
+
+.chat-message-prose__list li {
+  padding-left: 2px;
+}
+
+.chat-message-prose__blockquote {
+  margin: 0;
+  padding: 8px 12px;
+  border-left: 3px solid #93c5fd;
+  background: #f8fafc;
+  border-radius: 0 8px 8px 0;
+  color: #334155;
+}
+
+.chat-message-prose__code {
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  background: #f1f5f9;
+  color: #0f172a;
+}
+
+.chat-message-prose strong {
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.chat-message-prose em {
+  font-style: italic;
+  color: #475569;
+}
+
+.landing-guide-list {
+  margin: 10px 0 0;
+  padding-left: 18px;
+  display: grid;
+  gap: 6px;
+  color: var(--text-soft);
+  font-size: 14px;
+}
+
 .auth-card {
   max-width: 520px;
   padding: 32px;
@@ -737,7 +813,7 @@ body {
   color: #0f1f4a;
 }
 
-.cinechat-preview__assistant-content > p {
+.cinechat-preview__assistant-content>p {
   margin: 0;
   font-size: 0.91rem;
   line-height: 1.5;
@@ -841,7 +917,7 @@ body {
   padding: 20px 20px 18px;
 }
 
-.cinechat-feature + .cinechat-feature {
+.cinechat-feature+.cinechat-feature {
   border-left: 1px solid rgba(191, 219, 254, 0.85);
 }
 
@@ -963,7 +1039,7 @@ body {
     grid-template-columns: 1fr;
   }
 
-  .cinechat-feature + .cinechat-feature {
+  .cinechat-feature+.cinechat-feature {
     border-left: 0;
     border-top: 1px solid rgba(191, 219, 254, 0.85);
   }

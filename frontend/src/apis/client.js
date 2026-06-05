@@ -1,8 +1,13 @@
 import axios from "axios";
 
+const DEFAULT_API_BASE_URL =
+   typeof window !== "undefined"
+      ? `${window.location.protocol}//${window.location.hostname}:5000/api`
+      : "http://localhost:5000/api";
+
 const BASE_URL =
    import.meta.env.VITE_API_BASE_URL ||
-   (import.meta.env.DEV ? "http://localhost:3000/api" : "");
+   (import.meta.env.DEV ? DEFAULT_API_BASE_URL : DEFAULT_API_BASE_URL);
 
 export const apiClient = axios.create({
    baseURL: BASE_URL,
@@ -13,14 +18,6 @@ export const apiClient = axios.create({
 
 apiClient.interceptors.request.use(
    (config) => {
-      if (import.meta.env.PROD && !import.meta.env.VITE_API_BASE_URL) {
-         return Promise.reject(
-            new Error(
-               "VITE_API_BASE_URL belum diisi di environment production.",
-            ),
-         );
-      }
-
       const token = localStorage.getItem("token") || sessionStorage.getItem("token");
 
       if (token) {
@@ -51,10 +48,12 @@ apiClient.interceptors.response.use(
          const requestUrl = error.config?.url || "";
          const isBootstrapMe = requestUrl.includes("/auth/me");
          const isOnAuthPage = window.location.pathname === "/auth";
+         const isGuestChatRequest =
+            requestUrl.includes("/chat") && !requestUrl.includes("/chat/sessions");
 
          clearAuthStorage();
 
-         if (!isBootstrapMe && !isOnAuthPage) {
+         if (!isBootstrapMe && !isOnAuthPage && !isGuestChatRequest) {
             window.location.href = "/auth";
          }
       }

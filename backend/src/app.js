@@ -37,6 +37,7 @@ export function createApp() {
     });
   });
 
+  app.use(apiRoutes);
   app.use("/api", apiRoutes);
 
   app.use(notFound);

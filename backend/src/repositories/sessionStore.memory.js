@@ -3,7 +3,9 @@ import { randomUUID } from "node:crypto";
 const sessions = new Map();
 
 export const memorySessionStore = {
-  async getLatest(_userId) {
+  async getLatest(userId) {
+    if (!userId) return null;
+
     const latest = [...sessions.values()].sort(
       (a, b) => new Date(b.updatedAt) - new Date(a.updatedAt),
     )[0];
@@ -16,13 +18,13 @@ export const memorySessionStore = {
     };
   },
 
-  async getOrCreate(sessionId, firstUserMessage, { forceNew = false } = {}) {
-    if (sessionId && sessions.has(sessionId)) {
+  async getOrCreate(sessionId, firstUserMessage, { userId, forceNew = false } = {}) {
+    if (sessionId && !forceNew && sessions.has(sessionId)) {
       return sessions.get(sessionId);
     }
 
-    if (!forceNew) {
-      const latest = await this.getLatest();
+    if (userId && !forceNew) {
+      const latest = await this.getLatest(userId);
       if (latest) return sessions.get(latest.id);
     }
 
@@ -51,7 +53,9 @@ export const memorySessionStore = {
     return session;
   },
 
-  async list(_userId) {
+  async list(userId) {
+    if (!userId) return [];
+
     return [...sessions.values()]
       .sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt))
       .map((item) => ({
@@ -65,7 +69,9 @@ export const memorySessionStore = {
     return sessions.get(id) || null;
   },
 
-  async removeById(id, _userId) {
+  async removeById(id, userId) {
+    if (!userId) return false;
+
     if (!sessions.has(id)) return false;
     sessions.delete(id);
     return true;

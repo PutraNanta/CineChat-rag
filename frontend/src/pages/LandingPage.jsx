@@ -12,6 +12,7 @@ import {
   Send,
   Star,
   Zap,
+  Terminal,
 } from "lucide-react";
 import { useAuthContext } from "@/context/AuthContext";
 
@@ -48,6 +49,26 @@ const movieItems = [
     number: "3.",
     title: "Blade Runner 2049 (2017)",
     description: "Visual memukau dengan cerita yang mendalam.",
+  },
+];
+
+// DATA MODES DENGAN DETAIL KOLOM CRUD YANG EKSPLISIT
+const modeGuides = [
+  {
+    title: "💡 Pencarian Data (READ)",
+    items: [
+      { mode: "Mode RAG", desc: "Fitur Chat AI cerdas yang dikombinasikan dengan basis data vektor (Vector Database Pinecone) untuk pencarian berbasis konteks." },
+      { mode: "Mode SQL Normalisasi", desc: "Menjawab pertanyaan dengan melakukan query langsung pada sumber Database Normalisasi (Sakila OLTP)." },
+      { mode: "Mode SQL Denormalisasi", desc: "Menjawab pertanyaan analitik dan ringkasan data besar melalui Database Denormalisasi (Sakila DWH)." },
+    ],
+  },
+  {
+    title: "🎬 Manajemen Film (CRUD DWH)",
+    items: [
+      { mode: "Tambah Film", desc: "Menambahkan data film baru (Create) ke database dengan atribut lengkap: Title, Description, Category, Price, Rating, dan Actors." },
+      { mode: "Edit Film", desc: "Memperbarui atau memodifikasi atribut film yang sudah ada di database (Update), baik mengubah deskripsi, harga (Price), maupun kategori." },
+      { mode: "Hapus Film", desc: "Menghapus data film tertentu dari sistem database (Delete) secara permanen berdasarkan judul (Title) film." },
+    ],
   },
 ];
 
@@ -211,7 +232,65 @@ export function LandingPage() {
             );
           })}
         </section>
-
+        {/* PROMPT GRID DENGAN DETAIL ATRIBUT KOLOM DATABASE */}
+        <section className="prompt-grid" aria-label="Panduan mode CineChat">
+          {modeGuides.map((group) => (
+            <article className="prompt-card" key={group.title}>
+              <div className="prompt-card-head">
+                <div className="prompt-icon-wrap">
+                  <BookOpenText className="h-5 w-5" />
+                </div>
+                <h3>{group.title}</h3>
+              </div>
+              <ul className="landing-guide-list" style={{ listStyle: "none", paddingLeft: 0 }}>
+                {group.items.map((item) => (
+                  <li key={item.mode} style={{ marginBottom: "14px", lineHeight: "1.5" }}>
+                    <strong style={{ 
+                      color: "#fbbf24", 
+                      display: "block", 
+                      marginBottom: "2px",
+                      fontSize: "15px" 
+                    }}>
+                      {item.mode}
+                    </strong>
+                    <span style={{ fontSize: "14px", color: "#9ca3af" }}>{item.desc}</span>
+                  </li>
+                ))}
+              </ul>
+            </article>
+          ))}
+          
+          <article className="prompt-card">
+            <div className="prompt-card-head">
+              <div className="prompt-icon-wrap">
+                <MessageCircleMore className="h-5 w-5" />
+              </div>
+              <h3>Struktur Data & Atribut</h3>
+            </div>
+            <p style={{ fontSize: "14px", color: "#9ca3af", lineHeight: "1.6", marginBottom: "12px" }}>
+              Operasi CRUD pada manajemen film mendukung pengelolaan atribut database secara utuh melalui interaksi chat:
+            </p>
+            {/* 🌟 DAFTAR ATRIBUT ATURAN KOLOM */}
+            <div style={{ display: "flex", flexWrap: "wrap", gap: "6px", marginBottom: "12px" }}>
+              {["title", "description", "category", "price", "rating", "actors"].map((kolom) => (
+                <span key={kolom} style={{
+                  backgroundColor: "rgba(251, 191, 36, 0.1)",
+                  color: "#fbbf24",
+                  padding: "4px 8px",
+                  borderRadius: "6px",
+                  fontSize: "12px",
+                  fontFamily: "monospace",
+                  border: "1px solid rgba(251, 191, 36, 0.2)"
+                }}>
+                  {kolom}
+                </span>
+              ))}
+            </div>
+            <p style={{ fontSize: "13px", color: "#6b7280", lineHeight: "1.5" }}>
+              *Cara Pakai: Masuk ke ruang chat, pilih mode operasi lewat dropdown menu, lalu masukkan data atau instruksi Anda secara natural.
+            </p>
+          </article>
+        </section>
         <footer className="cinechat-footer">
           <div className="cinechat-footer__brand">
             <span className="cinechat-brand__mark cinechat-brand__mark--footer">

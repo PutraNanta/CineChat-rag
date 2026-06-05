@@ -16,6 +16,11 @@ export function authenticateOptional(req, _res, next) {
   }
 
   const user = verifyAccessToken(token);
+  if (!user) {
+    req.user = null;
+    return next();
+  }
+
   req.user = user;
   return next();
 }

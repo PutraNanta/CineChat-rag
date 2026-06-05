@@ -10,12 +10,12 @@ import { useNavigate } from "react-router-dom";
 export function ChatContainer({
    messages,
    onSendMessage,
-   endpointOptions,
-   selectedEndpoint,
-   onSelectEndpoint,
+   currentMode,
+   onModeChange,
    isTyping,
    isSidebarOpen,
    toggleSidebar,
+   showExamples = false,
 }) {
    // Ambil data user dari context (Best Practice)
    const { user, isAuthenticated } = useAuthContext();
@@ -131,13 +131,13 @@ export function ChatContainer({
                   <>
                      <ChatInput
                         onSendMessage={onSendMessage}
+                        currentMode={currentMode}
+                        onModeChange={onModeChange}
                         isTyping={isTyping}
-                        endpointOptions={endpointOptions}
-                        selectedEndpoint={selectedEndpoint}
-                        onSelectEndpoint={onSelectEndpoint}
+                        showExamples={showExamples}
                      />
                      <p className="text-xs text-center text-muted-foreground mt-3">
-                        RAG Assistant dapat membuat kesalahan. Harap verifikasi informasi penting.
+                        CineChat dapat membuat kesalahan. Harap verifikasi informasi penting.
                      </p>
                   </>
                )}

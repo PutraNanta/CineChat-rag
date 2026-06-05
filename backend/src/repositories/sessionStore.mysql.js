@@ -39,13 +39,13 @@ export const mysqlSessionStore = {
     const db = getDbPool();
     const ownerId = userId || (await ensureGuestUserId());
 
-    if (sessionId) {
+    if (sessionId && !forceNew) {
       const [rows] = await db.query(
         `SELECT id, title, user_id AS userId, created_at AS createdAt, updated_at AS updatedAt
          FROM chat_sessions
-         WHERE id = ? AND status = 'active'
+         WHERE id = ? AND user_id = ? AND status = 'active'
          LIMIT 1`,
-        [sessionId],
+        [sessionId, ownerId],
       );
       if (rows.length > 0) {
         return rows[0];

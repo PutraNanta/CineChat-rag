@@ -1,24 +1,19 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useParams, useLocation, useNavigate } from "react-router-dom";
 import { apiClient } from "../apis/client.js";
 import { AppLayout } from "../components/layout/AppLayout";
 import { ChatContainer } from "../components/chat/ChatContainer";
 import { useNotify } from "@/context/NotifyContext";
 import { useLoading } from "@/context/LoadingContext";
+import { useAuthContext } from "@/context/AuthContext";
+import {
+   isNewChatSession,
+   isValidSessionId,
+   resolveSessionIdFromResponse,
+} from "@/utils/session.js";
+import { notifyChatSessionsChanged } from "@/utils/chatEvents.js";
 
-const ENDPOINT_OPTIONS = [
-   { value: "/api/openai/rag", label: "RAG Database" },
-   { value: "/api/openai/oltp", label: "SQL normalisasi (OLTP)" },
-   { value: "/api/openai/dwh", label: "SQL denormalisasi (DWH)" },
-];
-
-const normalizeEndpointPath = (selectedEndpoint) => {
-   const baseURL = apiClient.defaults.baseURL || "";
-   if (baseURL.endsWith("/api") && selectedEndpoint.startsWith("/api/")) {
-      return selectedEndpoint.replace("/api", "");
-   }
-   return selectedEndpoint;
-};
+const CHAT_ENDPOINT = "/chat";
 
 export function ChatPage() {
    const { sessionId } = useParams();
@@ -26,103 +21,120 @@ export function ChatPage() {
    const navigate = useNavigate();
    const notify = useNotify();
    const { withLoading } = useLoading();
+   const { isAuthenticated, isLoading: authLoading } = useAuthContext();
    const initialPrompt = location.state?.initialPrompt || null;
-   const forceNewSession =
-      sessionId === "new" && location.state?.forceNewSession === true;
+   const isNewChat = isNewChatSession(sessionId);
 
-   const [messages, setMessages] = useState(
-      location.state?.initialMessages || [],
-   );
+   const [messages, setMessages] = useState([]);
    const [isTyping, setIsTyping] = useState(false);
    const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-   const [selectedEndpoint, setSelectedEndpoint] = useState(
-      ENDPOINT_OPTIONS[0].value,
-   );
-   const [resolvingSession, setResolvingSession] = useState(
-      sessionId === "new" && !forceNewSession,
-   );
+   
+   // 🌟 TAMBAHAN: State untuk melacak mode dropdown aktif (default: 'rag')
+   const [currentMode, setCurrentMode] = useState("rag");
+   const skipHistoryFetchRef = useRef(null);
+   const prevSessionIdRef = useRef(sessionId);
+   const guestSessionIdRef = useRef(null);
 
    const toggleSidebar = () => setIsSidebarOpen((prev) => !prev);
 
    const handleNewChat = () => {
-      navigate("/chat/new", { state: { forceNewSession: true } });
+      setMessages([]);
+      setCurrentMode("rag");
+      skipHistoryFetchRef.current = null;
+      guestSessionIdRef.current = null;
+      navigate("/chat/new", {
+         replace: isNewChat,
+      });
    };
 
    useEffect(() => {
-      if (sessionId !== "new" || forceNewSession) {
-         setResolvingSession(false);
+      if (authLoading) return;
+
+      const prevSessionId = prevSessionIdRef.current;
+      prevSessionIdRef.current = sessionId;
+
+      if (!isAuthenticated) {
+         if (!isNewChat) {
+            navigate("/chat/new", { replace: true });
+         }
          return;
       }
 
-      const resumeLatestSession = async () => {
+      if (isNewChat) {
+         if (!isNewChatSession(prevSessionId)) {
+            setMessages([]);
+            skipHistoryFetchRef.current = null;
+         }
+         return;
+      }
+
+      if (!isValidSessionId(sessionId)) {
+         navigate("/chat/new", { replace: true });
+         return;
+      }
+
+      let cancelled = false;
+
+      const fetchHistory = async () => {
+         if (skipHistoryFetchRef.current === sessionId) {
+            skipHistoryFetchRef.current = null;
+            return;
+         }
+
+         setMessages([]);
+
          try {
-            const res = await apiClient.get("/chat/sessions/latest");
-            if (res.data?.id) {
-               navigate(`/chat/${res.data.id}`, { replace: true });
+            const res = await withLoading(async () =>
+               apiClient.get(`/chat/sessions/${sessionId}`),
+            );
+            if (cancelled) return;
+
+            if (!Array.isArray(res.data)) {
+               throw new Error("Format riwayat chat tidak valid.");
+            }
+
+            const history = res.data.map((msg) => ({
+               role: msg.sender,
+               content: msg.content,
+               sql: msg.sql_tereksekusi || null,
+            }));
+            setMessages(history);
+         } catch (error) {
+            if (cancelled) return;
+
+            const status = error.response?.status;
+            if (status === 401 || status === 403) {
                return;
             }
-         } catch (error) {
-            console.error("Failed to resolve latest session:", error);
-         } finally {
-            setResolvingSession(false);
-         }
-      };
 
-      resumeLatestSession();
-   }, [sessionId, forceNewSession, navigate]);
+            console.error("Failed to fetch chat history:", error);
 
-   useEffect(() => {
-      const fetchHistory = async () => {
-         if (resolvingSession) return;
-
-         if (
-            sessionId &&
-            sessionId !== "new" &&
-            (!location.state?.initialMessages ||
-               location.state.initialMessages.length === 0)
-         ) {
-            try {
-               const res = await withLoading(async () =>
-                  apiClient.get(`/chat/sessions/${sessionId}`),
-               );
-               if (res.data) {
-                  const history = res.data.map((msg) => ({
-                     role: msg.sender,
-                     content: msg.content,
-                  }));
-                  setMessages(history);
-               }
-            } catch (error) {
-               console.error("Failed to fetch chat history:", error);
+            if (status === 404) {
                notify.error(
-                  "Gagal Memuat Riwayat",
-                  "Riwayat chat tidak berhasil diambil dari server.",
+                  "Percakapan Tidak Ditemukan",
+                  "Sesi ini tidak ada, sudah dihapus, atau bukan milik akun Anda. Silakan pilih percakapan lain.",
                );
-               if (error.response?.status === 404) {
-                  navigate("/chat", { replace: true });
-               }
+               navigate("/chat/new", { replace: true });
+               return;
             }
-         } else if (sessionId === "new" && forceNewSession) {
-            setMessages([]);
+
+            notify.error(
+               "Gagal Memuat Riwayat",
+               "Terjadi kesalahan saat mengambil riwayat chat. Silakan coba lagi.",
+            );
          }
       };
 
       fetchHistory();
-   }, [
-      sessionId,
-      location.state?.initialMessages,
-      navigate,
-      notify,
-      withLoading,
-      resolvingSession,
-      forceNewSession,
-   ]);
+
+      return () => {
+         cancelled = true;
+      };
+   }, [sessionId, navigate, notify, authLoading, isAuthenticated]);
 
    useEffect(() => {
       if (
-         sessionId === "new" &&
-         !forceNewSession &&
-         !resolvingSession &&
+         isNewChat &&
          initialPrompt &&
          messages.length === 0 &&
          !isTyping
@@ -130,43 +142,66 @@ export function ChatPage() {
          handleSendMessage(initialPrompt);
       }
       // eslint-disable-next-line react-hooks/exhaustive-deps
-   }, [sessionId, initialPrompt, resolvingSession, forceNewSession]);
+   }, [sessionId, initialPrompt]);
 
-   const handleSendMessage = async (text, endpointOverride) => {
+   const handleSendMessage = async (text) => {
       if (!text.trim()) return;
-      const endpoint = endpointOverride || selectedEndpoint;
 
       const newMessage = { role: "user", content: text };
       setMessages((prev) => [...prev, newMessage]);
       setIsTyping(true);
 
       try {
-         const payload = { message: text };
-         if (sessionId && sessionId !== "new") {
-            payload.sessionId = sessionId;
-         }
-         if (forceNewSession) {
+         // 🌟 PERBAIKAN: Format payload diubah dari 'message' menjadi 'pertanyaan'
+         // Dan menyertakan properti 'mode' ke backend Express sesuai spesifikasi
+         const payload = { 
+            pertanyaan: text, 
+            mode: currentMode 
+         };
+         
+         if (isAuthenticated) {
+            if (isValidSessionId(sessionId)) {
+               payload.sessionId = sessionId;
+            }
+            if (isNewChat) {
+               payload.forceNewSession = true;
+            }
+         } else if (isValidSessionId(guestSessionIdRef.current)) {
+            payload.sessionId = guestSessionIdRef.current;
+         } else if (isNewChat) {
             payload.forceNewSession = true;
          }
 
          const res = await withLoading(async () =>
-            apiClient.post(normalizeEndpointPath(endpoint), payload),
+            apiClient.post(CHAT_ENDPOINT, payload),
          );
 
+         // PERBAIKAN: Mengambil data respons dari properti '.jawaban', bukan '.answer'
          const aiResponse = {
             role: "assistant",
-            content: res.data.answer,
+            content: res.data.jawaban,
+            // TAMBAHAN: Menyimpan kueri SQL produksi untuk dirender di komponen UI Transparan
+            sql: res.data.sql_tereksekusi || null 
          };
 
          setMessages((prev) => [...prev, aiResponse]);
 
-         if (sessionId === "new" && res.data.sessionId) {
-            navigate(`/chat/${res.data.sessionId}`, {
+         const createdSessionId = resolveSessionIdFromResponse(res.data);
+
+         if (isNewChat && createdSessionId && isAuthenticated) {
+            skipHistoryFetchRef.current = createdSessionId;
+            notifyChatSessionsChanged();
+            navigate(`/chat/${createdSessionId}`, {
                replace: true,
-               state: {
-                  initialMessages: [...messages, newMessage, aiResponse],
-               },
+               state: null,
             });
+         } else if (!isAuthenticated && createdSessionId) {
+            guestSessionIdRef.current = createdSessionId;
+         } else if (isNewChat && !createdSessionId) {
+            notify.error(
+               "Sesi Chat Gagal Dibuat",
+               "Server tidak mengembalikan ID percakapan. Pesan mungkin sudah terkirim, silakan refresh atau coba lagi.",
+            );
          }
       } catch (error) {
          console.error("Error sending message:", error);
@@ -179,28 +214,20 @@ export function ChatPage() {
          const statusText = statusCode ? ` (HTTP ${statusCode})` : "";
          notify.error(
             "Pengiriman Gagal",
-            `Pesan tidak bisa dikirim ke endpoint ${endpoint}${statusText}. Detail: ${backendError}`,
+            `Pesan tidak bisa dikirim ke endpoint ${CHAT_ENDPOINT}${statusText}. Detail: ${backendError}`,
          );
          setMessages((prev) => [
             ...prev,
             {
                role: "assistant",
                content:
-                  `Mohon maaf, terjadi kesalahan saat menghubungi endpoint ${endpoint}${statusText}.`,
+                  `Mohon maaf, terjadi kesalahan saat menghubungi endpoint ${CHAT_ENDPOINT}${statusText}.`,
             },
          ]);
       } finally {
          setIsTyping(false);
       }
    };
-
-   if (resolvingSession) {
-      return (
-         <div className="min-h-screen flex items-center justify-center bg-background">
-            <p className="text-sm text-muted-foreground">Memuat percakapan...</p>
-         </div>
-      );
-   }
 
    return (
       <AppLayout
@@ -211,12 +238,12 @@ export function ChatPage() {
          <ChatContainer
             messages={messages}
             onSendMessage={handleSendMessage}
-            endpointOptions={ENDPOINT_OPTIONS}
-            selectedEndpoint={selectedEndpoint}
-            onSelectEndpoint={setSelectedEndpoint}
             isTyping={isTyping}
             isSidebarOpen={isSidebarOpen}
             toggleSidebar={toggleSidebar}
+            currentMode={currentMode}
+            onModeChange={setCurrentMode}
+            showExamples={isNewChat && messages.length === 0}
          />
       </AppLayout>
    );

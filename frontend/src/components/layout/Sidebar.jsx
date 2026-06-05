@@ -8,6 +8,8 @@ import { useAuthContext } from "@/context/AuthContext"
 import { useNotify } from "@/context/NotifyContext"
 import { useLoading } from "@/context/LoadingContext"
 import { apiClient } from "@/apis/client.js"
+import { isValidSessionId } from "@/utils/session.js"
+import { CHAT_SESSIONS_CHANGED } from "@/utils/chatEvents.js"
 
 export function Sidebar({ isOpen, toggleSidebar, onNewChat }) {
   const { isAuthenticated, logout } = useAuthContext()
@@ -18,7 +20,12 @@ export function Sidebar({ isOpen, toggleSidebar, onNewChat }) {
   const [sessions, setSessions] = useState([])
 
   useEffect(() => {
-     if (isAuthenticated) {
+     if (!isAuthenticated) {
+        setSessions([])
+        return
+     }
+
+     const fetchSessions = () => {
         withLoading(async () => {
           const res = await apiClient.get('/chat/sessions')
           setSessions(res.data)
@@ -26,9 +33,13 @@ export function Sidebar({ isOpen, toggleSidebar, onNewChat }) {
           console.error("Failed to fetch sessions", err)
           notify.error("Gagal Memuat Sesi", "Daftar riwayat percakapan tidak berhasil diambil.")
         })
-     } else {
-        setSessions([])
      }
+
+     fetchSessions()
+
+     const onSessionsChanged = () => fetchSessions()
+     window.addEventListener(CHAT_SESSIONS_CHANGED, onSessionsChanged)
+     return () => window.removeEventListener(CHAT_SESSIONS_CHANGED, onSessionsChanged)
   }, [isAuthenticated, location.pathname, notify, withLoading])
 
   const handleDeleteSession = async (e, id) => {
@@ -49,7 +60,7 @@ export function Sidebar({ isOpen, toggleSidebar, onNewChat }) {
       setSessions(sessions.filter(s => s.id !== id))
       notify.success("Sesi Dihapus", "Percakapan berhasil dihapus.")
       if (location.pathname === `/chat/${id}`) {
-        navigate("/chat")
+        navigate("/chat/new")
       }
     } catch (error) {
       console.error("Failed to delete session", error)
@@ -151,7 +162,9 @@ export function Sidebar({ isOpen, toggleSidebar, onNewChat }) {
                       Belum ada percakapan
                    </div>
                 ) : (
-                   sessions.map((session) => {
+                   sessions
+                     .filter((session) => isValidSessionId(session.id))
+                     .map((session) => {
                       const isActive = location.pathname === `/chat/${session.id}`;
                        return (
                           <div key={session.id} className="relative group mb-1">
@@ -159,7 +172,9 @@ export function Sidebar({ isOpen, toggleSidebar, onNewChat }) {
                                variant={isActive ? "secondary" : "ghost"}
                                className={`w-full justify-start font-normal text-sm px-3 text-left pr-8 ${isActive ? "bg-muted font-medium" : ""}`}
                                onClick={() => {
-                                  if (!isActive) navigate(`/chat/${session.id}`);
+                                  if (!isActive) {
+                                    navigate(`/chat/${session.id}`, { state: null });
+                                  }
                                }}
                              >
                                <MessageSquare className="mr-3 h-4 w-4 shrink-0 opacity-70" />
