@@ -455,74 +455,27 @@ body {
   position: relative;
   min-height: 100vh;
   overflow: hidden;
-  background:
-    radial-gradient(circle at 10% 10%, rgba(255, 255, 255, 0.92), rgba(255, 255, 255, 0) 30%),
-    radial-gradient(circle at 85% 20%, rgba(219, 234, 254, 0.85), rgba(219, 234, 254, 0) 32%),
-    linear-gradient(180deg, #f9fbff 0%, #eef4ff 100%);
+  background-color: #eff6ff;
+  background-image: url("/landing-bg.svg");
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
 }
 
 .cinechat-landing::before {
   content: "";
   position: absolute;
   inset: 0;
-  background:
-    radial-gradient(circle at 4% 6%, rgba(255, 255, 255, 0.95) 0 1.1rem, transparent 1.15rem),
-    radial-gradient(circle at 7% 8%, rgba(255, 255, 255, 0.7) 0 1.4rem, transparent 1.45rem),
-    radial-gradient(circle at 12% 12%, rgba(255, 255, 255, 0.45) 0 2.2rem, transparent 2.25rem);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.25), rgba(255, 255, 255, 0.08));
   pointer-events: none;
 }
 
 .cinechat-landing__ambient {
-  position: absolute;
-  border-radius: 999px;
-  filter: blur(0);
-  pointer-events: none;
-}
-
-.cinechat-landing__ambient--left {
-  left: -10rem;
-  top: 12rem;
-  width: 28rem;
-  height: 28rem;
-  background: radial-gradient(circle, rgba(191, 219, 254, 0.28), transparent 68%);
-}
-
-.cinechat-landing__ambient--right {
-  right: -8rem;
-  top: 8rem;
-  width: 30rem;
-  height: 30rem;
-  background: radial-gradient(circle, rgba(37, 99, 235, 0.08), transparent 70%);
-}
-
-.cinechat-landing__ambient--bottom {
-  left: 30%;
-  bottom: -10rem;
-  width: 42rem;
-  height: 18rem;
-  background: radial-gradient(circle, rgba(255, 255, 255, 0.8), transparent 70%);
+  display: none;
 }
 
 .cinechat-landing__film {
-  position: absolute;
-  color: rgba(96, 165, 250, 0.12);
-  pointer-events: none;
-}
-
-.cinechat-landing__film--left {
-  left: -8rem;
-  bottom: 5rem;
-  width: 28rem;
-  height: 28rem;
-  transform: rotate(-18deg);
-}
-
-.cinechat-landing__film--right {
-  right: -7rem;
-  top: 8rem;
-  width: 28rem;
-  height: 28rem;
-  transform: rotate(20deg);
+  display: none;
 }
 
 .cinechat-landing__container {
