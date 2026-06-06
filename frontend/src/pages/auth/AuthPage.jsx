@@ -179,7 +179,7 @@ export function AuthPage() {
             className="auth-top-pill"
           >
             <ArrowLeft className="h-5 w-5" />
-            <span>Kembali ke Landing Page</span>
+            <span>Kembali</span>
           </Button>
         </div>
 
@@ -191,7 +191,7 @@ export function AuthPage() {
 
           <h1>Masuk atau Buat Akun</h1>
           <p className="auth-card__subtitle">
-            Masuk atau buat akun untuk mengakses chat gateway.
+            Masuk atau buat akun untuk menyimpan seluruh percakapan Anda.
           </p>
 
           <div className="auth-tab-row" role="tablist" aria-label="Autentikasi">

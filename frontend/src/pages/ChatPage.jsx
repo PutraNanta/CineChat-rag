@@ -54,6 +54,11 @@ export function ChatPage() {
       prevSessionIdRef.current = sessionId;
 
       if (!isAuthenticated) {
+         setMessages([]);
+         setCurrentMode("rag");
+         skipHistoryFetchRef.current = null;
+         guestSessionIdRef.current = null;
+
          if (!isNewChat) {
             navigate("/chat/new", { replace: true });
          }
