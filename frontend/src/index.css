@@ -456,17 +456,20 @@ body {
   min-height: 100vh;
   overflow: hidden;
   background-color: #eff6ff;
-  background-image: url("/landing-bg.svg");
-  background-position: center;
-  background-repeat: no-repeat;
-  background-size: cover;
+  isolation: isolate;
 }
 
 .cinechat-landing::before {
   content: "";
-  position: absolute;
+  position: fixed;
   inset: 0;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.25), rgba(255, 255, 255, 0.08));
+  z-index: -1;
+  background-image: 
+    linear-gradient(180deg, rgba(255, 255, 255, 0.25), rgba(255, 255, 255, 0.08)),
+    url("/landing-bg.svg");
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
   pointer-events: none;
 }
 
