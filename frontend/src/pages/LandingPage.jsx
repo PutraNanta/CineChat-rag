@@ -56,23 +56,23 @@ const movieItems = [
 const promptCards = [
   {
     icon: UserRound,
-    title: "Pencarian Data (TMDb)",
-    description: "Akses data film, TV, aktor, genre, dan lainnya dari TMDb.",
+    title: "Pencarian Data Film",
+    description: "Akses informasi lengkap mulai dari data film, TV series, aktor, hingga genre secara realtime.",
   },
   {
     icon: Database,
-    title: "Manajemen Film (CRUD + DWH)",
-    description: "Tambah, ubah, hapus, dan kelola data film sesuai kebutuhanmu.",
+    title: "Manajemen Data CRUD",
+    description: "Fitur manipulasi database untuk menambah, memperbarui, atau menghapus data film langsung dari chat.",
   },
   {
     icon: FolderOpen,
-    title: "Struktur Data & Atribut",
-    description: "Organisasi data terstruktur untuk hasil pencarian yang lebih relevan.",
+    title: "Multi-Mode Selector",
+    description: "Gunakan menu dropdown untuk memilih otak chatbot: mode RAG AI, SQL Normalisasi, atau SQL Denormalisasi.",
   },
   {
     icon: ShieldCheck,
-    title: "Sumber Data Terpercaya",
-    description: "Menggunakan sumber data publik yang akurat dan terpercaya.",
+    title: "Validasi & Arsitektur",
+    description: "Sistem RAG memastikan jawaban AI tetap akurat sesuai basis data tanpa ada halusinasi informasi.",
   },
 ];
 

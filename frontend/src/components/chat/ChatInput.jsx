@@ -11,6 +11,22 @@ const MODE_OPTIONS = [
   { value: "delfilm", label: "Hapus Film" },
 ];
 
+const MODE_PLACEHOLDERS = {
+  rag: "Tanya info film — plot, aktor, tahun rilis, dan sejenisnya...",
+  oltp: "Tanya film, genre/kategori, atau aktor. Contoh: 5 film Action terbaru",
+  dwh: "Tanya data film lengkap: judul, genre, aktor, rating, harga, durasi...",
+  addfilm:
+    "Wajib: judul, deskripsi, kategori, aktor. Opsional: rating, harga, durasi",
+  editfilm:
+    "Sebut judul film, lalu bagian yang ingin diubah (deskripsi, kategori, rating, aktor...)",
+  delfilm: "Ketik judul film yang ingin dihapus dari database",
+};
+
+function getInputPlaceholder(mode, isTyping) {
+  if (isTyping) return "Memproses jawaban...";
+  return MODE_PLACEHOLDERS[mode] ?? "Tanyakan sesuatu ke CineChat Assistant...";
+}
+
 const CHAT_EXAMPLES = [
   {
     id: "oltp-sample",
@@ -113,9 +129,7 @@ export function ChatInput({
           <textarea
             ref={textareaRef}
             className="flex-1 max-h-32 min-h-[24px] bg-transparent resize-none outline-none py-1.5 text-sm disabled:cursor-not-allowed"
-            placeholder={
-              isTyping ? "Memproses jawaban..." : "Tanyakan sesuatu ke CineChat Assistant..."
-            }
+            placeholder={getInputPlaceholder(currentMode, isTyping)}
             rows={1}
             value={text}
             onChange={(e) => setText(e.target.value)}

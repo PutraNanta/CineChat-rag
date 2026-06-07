@@ -33,7 +33,7 @@ export function DashboardPage() {
         <header className="dashboard-header">
           <div>
             <p className="dashboard-greeting">{welcomeText}</p>
-            <h1 className="dashboard-title">CineChat RAG Web</h1>
+            <h1 className="dashboard-title">CineChat</h1>
             <p className="dashboard-subtitle">
               Web chat ini terhubung ke satu endpoint AI melalui Node-RED untuk percakapan seputar film.
             </p>

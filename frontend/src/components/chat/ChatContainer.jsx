@@ -1,5 +1,5 @@
 import { useRef, useEffect } from "react";
-import { Home, Menu } from "lucide-react";
+import { Clapperboard, Menu } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { ChatMessage } from "./ChatMessage";
@@ -54,8 +54,8 @@ export function ChatContainer({
                   onClick={() => navigate("/")}
                   className="rounded-full text-muted-foreground hover:bg-sky-50 hover:text-sky-700"
                >
-                  <Home className="mr-1.5 h-4 w-4" />
-                  Landing Page
+                  <Clapperboard className="mr-1.5 h-4 w-4" />
+                  CineChat
                </Button>
             </div>
          )}

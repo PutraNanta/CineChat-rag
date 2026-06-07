@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react"
 import { useNavigate, useLocation } from "react-router-dom"
 import {
-  Plus, MessageSquare, Menu, LogOut, LogIn, UserCircle2, Lock, Trash2, Home,
+  Plus, MessageSquare, Menu, LogOut, LogIn, UserCircle2, Lock, Trash2, Clapperboard,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useAuthContext } from "@/context/AuthContext"
@@ -81,19 +81,21 @@ export function Sidebar({ isOpen, toggleSidebar, onNewChat }) {
   const userName = storedUser?.name || storedUser?.username || storedUser?.email || "Pengguna"
 
   const handleLogoutConfirm = async () => {
-    const confirmed = await notify.confirm({
-      title: "Konfirmasi Keluar",
-      message: "Apakah Anda yakin ingin keluar dari akun saat ini?",
-      confirmText: "Ya, Keluar",
-      cancelText: "Batal",
-    })
+  const confirmed = await notify.confirm({
+    title: "Konfirmasi Keluar",
+    message: "Apakah Anda yakin ingin keluar dari akun saat ini?",
+    confirmText: "Ya, Keluar",
+    cancelText: "Batal",
+  })
 
-    if (!confirmed) return
+  if (!confirmed) return
 
-    logout()
-    notify.info("Berhasil Keluar", "Anda telah keluar dari sesi saat ini.")
-    navigate("/")
-  }
+  logout()
+  notify.info("Berhasil Keluar", "Anda telah keluar dari sesi saat ini.")
+  
+  // Langsung arahkan ke halaman auth dan hapus history stack logout
+  navigate("/auth", { replace: true }) 
+}
 
   return (
     <>
@@ -111,10 +113,10 @@ export function Sidebar({ isOpen, toggleSidebar, onNewChat }) {
               type="button"
               onClick={() => navigate("/")}
               className="flex flex-1 min-w-0 items-center gap-2.5 rounded-xl px-2 py-2 text-left transition-colors hover:bg-muted/80"
-              title="Kembali ke Landing Page"
+              title="Kembali"
             >
               <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-sky-500/15 text-sky-600">
-                <Home className="h-4 w-4" />
+                <Clapperboard className="h-4 w-4" />
               </span>
               <span className="min-w-0">
                 <span className="block truncate text-sm font-semibold text-foreground">
