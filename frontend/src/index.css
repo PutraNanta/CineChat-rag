@@ -466,7 +466,7 @@ body {
   z-index: -1;
   background-image: 
     linear-gradient(180deg, rgba(255, 255, 255, 0.25), rgba(255, 255, 255, 0.08)),
-    url("/landing-bg.svg");
+    url("/landing-bg.png");
   background-position: center;
   background-repeat: no-repeat;
   background-size: cover;
