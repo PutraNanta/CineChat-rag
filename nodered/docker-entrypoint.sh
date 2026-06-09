@@ -14,7 +14,8 @@ fi
 
 if [ -f /data/package.json ]; then
   cd /data
-  if [ ! -d node_modules/node-red-node-mysql ]; then
+  # Volume mount ./nodered/data menimpa node_modules dari image — install ulang jika ada yang kurang
+  if [ ! -d node_modules/node-red-node-mysql ] || [ ! -d node_modules/node-red-contrib-discord-advanced ]; then
     npm ci --omit=dev 2>/dev/null || npm install --omit=dev --no-audit --no-fund
   fi
 fi

@@ -1,4 +1,5 @@
-FROM nodered/node-red:3.1
+# Node 18 — discord-advanced & beberapa native module butuh Node >= 18
+FROM nodered/node-red:3.1.11-18
 
 USER root
 
